@@ -4,6 +4,7 @@ import numpy as np
 
 from tkinter import *
 from tkinter import filedialog
+from tkinter import ttk
 from tkinter.messagebox import showinfo
 
 from SkImage import SkImage
@@ -113,10 +114,9 @@ def scale_handler():
     
 
 # ROTATING
-def rotate(wise, degrees):
-    skIm.rotate(wise, degrees)
+def rotate(wise, degrees, mode):
+    skIm.rotate(wise, degrees, mode.get())
     update_image()
-    pass
 
 def toggle_wise(wise, clockwise_btn, c_clockwise_btn, rotate_lbl):
     if wise.get():
@@ -157,8 +157,13 @@ def rotate_handler():
     rotate_lbl2 = Label(rotate_win, text="degrees")
     rotate_lbl2.place(x=230, y=110, anchor="center")
 
+    rotate_cb = ttk.Combobox(rotate_win)
+    rotate_cb.place(x=200, y=130, anchor="center")
+    rotate_cb['values'] = ('nearest', 'bilinear', 'shear')
+    rotate_cb['state'] = 'readonly'
+
     rotate_btn = Button(rotate_win, text="Rotate",
-            command=lambda: rotate(wise.get(), int(rotate_degree.get())))
+            command=lambda: rotate(wise.get(), int(rotate_degree.get()), rotate_cb))
     rotate_btn.place(x=350, y=170, anchor="center")
 
 
@@ -224,6 +229,51 @@ def crop_handler():
     scale_btn.place(x=350, y=170, anchor="center")
 
 
+# BRIGHTNESS
+def bright(bias):
+    skIm.brightness(int(bias.get()))
+    update_image()
+
+def bright_handler():
+    bright_win = Toplevel(window) # Create new window
+
+    bright_win.title("Brighten Image")
+    bright_win.geometry("200x100")
+
+    bright_entry = Entry(bright_win, width=3) # Entry input for value of gain
+    bright_entry.place(x=90, y=40, anchor="center")
+    bright_entry.insert(END, 0)
+
+    bias_lbl = Label(bright_win, text="bias")
+    bias_lbl.place(x=110, y=40, anchor="w")
+
+    bright_btn = Button(bright_win, text="Apply",
+            command=lambda: bright(bright_entry))
+    bright_btn.place(x=150, y=70, anchor="center")
+
+# CONTRAST
+def contrast(gain):
+    skIm.contrast(float(gain.get()))
+    update_image()
+
+def contrast_handler():
+    contrast_win = Toplevel(window) # Create new window
+
+    contrast_win.title("Contrast Image")
+    contrast_win.geometry("200x100")
+
+    contrast_entry = Entry(contrast_win, width=3) # Entry input for value of gain
+    contrast_entry.place(x=90, y=40, anchor="center")
+    contrast_entry.insert(END, 0)
+
+    gain_lbl = Label(contrast_win, text="gain")
+    gain_lbl.place(x=110, y=40, anchor="w")
+
+    contrast_btn = Button(contrast_win, text="Apply",
+            command=lambda: contrast(contrast_entry))
+    contrast_btn.place(x=150, y=70, anchor="center")
+
+
 # Add and configure buttons
 def configure_buttons():
 
@@ -242,6 +292,12 @@ def configure_buttons():
 
     crop_btn = Button(f, text="Crop", command=crop_handler)
     crop_btn.place(x=100, y=300, anchor="center")
+
+    brightness_btn = Button(f, text="Brightness", command=bright_handler)
+    brightness_btn.place(x=100, y=400, anchor="center")
+
+    contrast_btn = Button(f, text="Contrast", command=contrast_handler)
+    contrast_btn.place(x=100, y=450, anchor="center")
 
     #... all other buttons
 

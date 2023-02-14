@@ -81,7 +81,7 @@ class SkImage:
         return new_y, new_x
 
 
-    def rotate(self, wise, degrees):
+    def rotate(self, wise, degrees, mode):
 
         # In the case counter clockwise was selected, negate the degrees
         if wise == 0:
@@ -105,81 +105,105 @@ class SkImage:
         new_h = round(abs(self.non_rotated.shape[0] * cosine)+abs(self.non_rotated.shape[1] * sine)) + 1 # add 1 so new height/width always > 0
         new_w = round(abs(self.non_rotated.shape[1] * cosine)+abs(self.non_rotated.shape[0] * sine)) + 1
 
-        # New image np array with exactly the correct width and height after rotation
-        new_arr = np.zeros([new_h, new_w, self.non_rotated.shape[2]], dtype=np.uint8)
-
         # Get centre of old image and new image        
         centre_h = round(((self.non_rotated.shape[0] + 1)/2) - 1)
         centre_w = round(((self.non_rotated.shape[1] + 1)/2) - 1)
-
         new_centre_h = round(((new_h + 1)/2) - 1)
         new_centre_w = round(((new_w + 1)/2) - 1)
+            
+        # New image np array with exactly the correct width and height after rotation
+        if mode != "bilinear":
+            new_arr = np.zeros([new_h, new_w, self.non_rotated.shape[2]], dtype=np.uint8)
+        else: # Bilinear uses same size
+            new_arr = np.zeros([self.non_rotated.shape[0], self.non_rotated.shape[1], self.non_rotated.shape[2]], dtype=np.uint8)
 
 
-        for i in range(self.non_rotated.shape[0]):
-            for j in range(self.non_rotated.shape[1]):
-                # Get pixel with respect to centre of image
-                y = self.non_rotated.shape[0] - i - centre_h - 1
-                x = self.non_rotated.shape[1] - j - centre_w - 1
+        # Nearest neighbour or Shear
+        if mode != "bilinear":
+            for i in range(self.non_rotated.shape[0]):
+                for j in range(self.non_rotated.shape[1]):
+                    # Get pixel with respect to centre of image
+                    y = self.non_rotated.shape[0] - i - centre_h - 1
+                    x = self.non_rotated.shape[1] - j - centre_w - 1
 
-                #co-ordinate of pixel with respect to the rotated image
-                # new_y = round(-x * sine + y * cosine)
-                # new_x = round(x * cosine + y * sine)
+                    if mode == "shear":
+                        # Applying shear Transformation                     
+                        new_y, new_x = self.shear_at_point(angle,x,y)
 
-                # new_y = -x * sine + y * cosine # true values floating point
-                # new_x = x * cosine + y * sine
+                    else:
+                        # co-ordinate of pixel with respect to the rotated image, Nearest Neighbour? moght be needed for both
+                        new_y = round(-x * sine + y * cosine)
+                        new_x = round(x * cosine + y * sine)
 
-                # Applying shear Transformation                     
-                new_y, new_x = self.shear_at_point(angle,x,y)
+                    # Centre also changes, need to change new x and y according to the new centre
+                    new_y = new_centre_h - new_y
+                    new_x = new_centre_w - new_x
 
-                # Centre also changes, need to change new x and y according to the new centre
-                new_y = new_centre_h - new_y
-                new_x = new_centre_w - new_x
+                    # error prevention before updating new np array
+                    if 0 <= new_x < new_w and 0 <= new_y < new_h and new_x >= 0 and new_y >=0:
+                        new_arr[new_y, new_x, :] = self.non_rotated[i, j, :]
 
-                # floor_x = math.floor(new_x)
-                # floor_y = math.floor(new_y)
-                # ceil_x = math.ceil(new_x)
-                # ceil_y = math.ceil(new_y)
+        # Bilinear Interpolation
+        else:
+            img = PIL.Image.fromarray(self.non_rotated)
+            for i in range(self.non_rotated.shape[0]):
+                for j in range(self.non_rotated.shape[1]):
+                    # Get pixel with respect to centre of image
+                    y = self.non_rotated.shape[0] - i - centre_h - 1
+                    x = self.non_rotated.shape[1] - j - centre_w - 1
 
-                # if floor_x < 0 or ceil_x < 0 or floor_x >= self.non_rotated.shape[1] or ceil_x >= self.non_rotated.shape[1] or floor_y < 0 or ceil_y < 0 or floor_y >= self.non_rotated.shape[0] or ceil_y >= self.non_rotated.shape[0]:
-                #     # print("Nope")
-                #     continue
+                    new_y = (-x * sine) + (y * cosine) # true values floating point (not rounded)
+                    new_x = (x * cosine) + (y * sine)
 
-                # tl_r, tl_g, tl_b = self.img.getpixel((floor_x, floor_y))
-                # tr_r, tr_g, tr_b = self.img.getpixel((ceil_x, floor_y))
-                # # print(floor_x)/
-                # # print(ceil_y)
-                # bl_r, bl_g, bl_b = self.img.getpixel((floor_x, ceil_y))
-                # br_r, br_g, br_b = self.img.getpixel((ceil_x, ceil_y))
+                    new_y = centre_h - new_y
+                    new_x = centre_w - new_x
 
-                # delta_x = new_x - floor_x
-                # delta_y = new_y - floor_y
+                    # get 4 points values
+                    x0 = math.floor(new_x)
+                    y0 = math.floor(new_y)
+                    x1 = math.ceil(new_x)
+                    y1 = math.ceil(new_y)
 
-                # # // linearly interpolate horizontally between top neighbours
-                # ft_r = (1 - delta_x) * tl_r + delta_x * tr_r
-                # ft_g = (1 - delta_x) * tl_g + delta_x * tr_g
-                # ft_b = (1 - delta_x) * tl_b + delta_x * tr_b
+                    #
+                    if x0 < 0 or x1 < 0 or x0 >= self.non_rotated.shape[1] or x1 >= self.non_rotated.shape[1] or y0 < 0 or y1 < 0 or y0 >= self.non_rotated.shape[0] or y1 >= self.non_rotated.shape[0]:
+                        continue
 
-                # fb_r = (1 - delta_x) * bl_r + delta_x * br_r
-                # fb_g = (1 - delta_x) * bl_g + delta_x * br_g
-                # fb_b = (1 - delta_x) * bl_b + delta_x * br_b
+                    # Get 4 corners
+                    tl_r, tl_g, tl_b = img.getpixel((x0, y0))
+                    tr_r, tr_g, tr_b = img.getpixel((x1, y0))
+                    bl_r, bl_g, bl_b = img.getpixel((x0, y1))
+                    br_r, br_g, br_b = img.getpixel((x1, y1))
 
-                # red = round((1 - delta_y) * ft_r + delta_y * fb_r)
-                # green = round((1 - delta_y) * ft_g + delta_y * fb_g)
-                # blue = round((1 - delta_y) * ft_b + delta_y * fb_b)
 
-                # if red < 0: red = 0
-                # if red > 255: red = 255
-                # if green < 0: green = 0
-                # if green > 255: green = 255
-                # if blue < 0: blue = 0
-                # if blue > 255: blue = 255
+                    # Performing bilinear interpolation for each rgb
+                    s = new_x - x0
+                    t = new_y - y0
 
-                # new_arr[round(new_y), round(new_x)] = red, green, blue
+                    # Equation 1
+                    ft_r = (1 - s) * tl_r + (s * tr_r)
+                    ft_g = (1 - s) * tl_g + (s * tr_g)
+                    ft_b = (1 - s) * tl_b + (s * tr_b)
 
-                # error prevention before updating new np array
-                if 0 <= new_x < new_w and 0 <= new_y < new_h and new_x >= 0 and new_y >=0:
-                    new_arr[new_y, new_x, :] = self.non_rotated[i, j, :]  
+                    # Equation 2
+                    fb_r = (1 - s) * bl_r + (s * br_r)
+                    fb_g = (1 - s) * bl_g + (s * br_g)
+                    fb_b = (1 - s) * bl_b + (s * br_b)
+
+                    # Equation 3
+                    red = round(((1 - t) * ft_r) + (t * fb_r))
+                    green = round(((1 - t) * ft_g) + (t * fb_g))
+                    blue = round(((1 - t) * ft_b) + (t * fb_b))
+
+                    # caps on rgb
+                    if red < 0: red = 0
+                    if red > 255: red = 255
+                    if green < 0: green = 0
+                    if green > 255: green = 255
+                    if blue < 0: blue = 0
+                    if blue > 255: blue = 255
+
+                    new_arr[i, j] = red, green, blue
+
 
         # Update skImage object (dont update non_rotated image)
         self.np_arr = new_arr
@@ -202,4 +226,77 @@ class SkImage:
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr
                 
+
+    # ------------------------- Linear Mappings -----------------------------
+    
+    def brightness(self, bias):
+
+        for i in range(self.np_arr.shape[0]):
+            for j in range(self.np_arr.shape[1]):
+
+                r, g, b = self.img.getpixel((j, i))
+
+                # Add bias to each rgb
+                r += bias
+                g += bias
+                b += bias
+
+                # Checks to see if in valid range
+                if r > 255:
+                    r = 255
+                elif r < 0:
+                    r = 0
+                if g > 255:
+                    g = 255
+                elif g < 0:
+                    g = 0
+                if b > 255:
+                    b = 255
+                elif b < 0:
+                    b = 0
+
+                self.np_arr[i][j] = r, g, b
+
+        # Update skImage object
+        self.img = PIL.Image.fromarray(self.np_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
+
+
+    def contrast(self, gain):
+
+        # invalid value
+        if gain == 0:
+            return
+
+        for i in range(self.np_arr.shape[0]):
+            for j in range(self.np_arr.shape[1]):
+
+                r, g, b = self.img.getpixel((j, i))
+
+                # Add bias to each rgb
+                r *= gain
+                g *= gain
+                b *= gain
+
+                # Checks to see if in valid range
+                if r > 255:
+                    r = 255
+                elif r < 0:
+                    r = 0
+                if g > 255:
+                    g = 255
+                elif g < 0:
+                    g = 0
+                if b > 255:
+                    b = 255
+                elif b < 0:
+                    b = 0
+
+                self.np_arr[i][j] = r, g, b
+        
+        # Update skImage object
+        self.img = PIL.Image.fromarray(self.np_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
                     

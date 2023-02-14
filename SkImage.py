@@ -111,11 +111,7 @@ class SkImage:
         new_centre_w = round(((new_w + 1)/2) - 1)
             
         # New image np array with exactly the correct width and height after rotation
-        if mode != "bilinear":
-            new_arr = np.zeros([new_h, new_w, self.non_rotated.shape[2]], dtype=np.uint8)
-        else: # Bilinear uses same size
-            new_arr = np.zeros([self.non_rotated.shape[0], self.non_rotated.shape[1], self.non_rotated.shape[2]], dtype=np.uint8)
-
+        new_arr = np.zeros([new_h, new_w, self.non_rotated.shape[2]], dtype=np.uint8)
 
         # Nearest neighbour or Shear
         if mode != "bilinear":
@@ -145,13 +141,14 @@ class SkImage:
         # Bilinear Interpolation
         else:
             img = PIL.Image.fromarray(self.non_rotated)
-            for i in range(self.non_rotated.shape[0]):
-                for j in range(self.non_rotated.shape[1]):
-                    # Get pixel with respect to centre of image
-                    y = self.non_rotated.shape[0] - i - centre_h - 1
-                    x = self.non_rotated.shape[1] - j - centre_w - 1
+            for i in range(new_h):
+                for j in range(new_w):
 
-                    new_y = (-x * sine) + (y * cosine) # true values floating point (not rounded)
+                    x = new_centre_w - j
+                    y = new_centre_h - i
+
+                    # true values floating point (not rounded)
+                    new_y = (-x * sine) + (y * cosine) 
                     new_x = (x * cosine) + (y * sine)
 
                     new_y = centre_h - new_y

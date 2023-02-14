@@ -157,15 +157,15 @@ def rotate_handler():
     rotate_lbl2 = Label(rotate_win, text="degrees")
     rotate_lbl2.place(x=230, y=110, anchor="center")
 
-    rotate_cb = ttk.Combobox(rotate_win)
-    rotate_cb.place(x=200, y=130, anchor="center")
+    rotate_cb = ttk.Combobox(rotate_win, width=8)
+    rotate_cb.place(x=200, y=150, anchor="center")
     rotate_cb['values'] = ('nearest', 'bilinear', 'shear')
     rotate_cb['state'] = 'readonly'
+    rotate_cb.current(1) # default to bilinear
 
     rotate_btn = Button(rotate_win, text="Rotate",
             command=lambda: rotate(wise.get(), int(rotate_degree.get()), rotate_cb))
     rotate_btn.place(x=350, y=170, anchor="center")
-
 
 
 # CROPPING
@@ -184,7 +184,6 @@ def crop(crop_left, crop_right, crop_top, crop_bottom):
     crop_right.insert(END, 0)
     crop_top.insert(END, 0)
     crop_bottom.insert(END, 0)
-
 
 def crop_handler():
     crop_win = Toplevel(window) # Create new window
@@ -251,6 +250,7 @@ def bright_handler():
             command=lambda: bright(bright_entry))
     bright_btn.place(x=150, y=70, anchor="center")
 
+
 # CONTRAST
 def contrast(gain):
     skIm.contrast(float(gain.get()))
@@ -277,7 +277,6 @@ def contrast_handler():
 # Add and configure buttons
 def configure_buttons():
 
-    # Upload Button
     reset_btn = Button(f, text="Reset", command=reset_image)
     reset_btn.place(x=1300, y=150, anchor="center")
 
@@ -323,19 +322,14 @@ window.geometry('1920x1080')
 # Main Frame
 f = Frame(window, bg="gray", width=1920, height=1080)
 f.grid(row=0,column=0,sticky="NW")
-# f.grid_propagate(0)
-# f.update()
-
 
 # Title label
 l = Label(f, text="Welcome to the skImage Processor", bg="white",  font=("Arial Bold", 50))
 l.place(x=960, y=75, anchor="center")
 
-
 # Upload Button
 upload_btn = Button(f, text="Upload Image", command=upload)
 upload_btn.place(x=1200, y=150, anchor="center")
-
 
 # IMAGE FRAME
 im_frame = Frame(f, width=600, height=400, bg="white")
@@ -347,5 +341,5 @@ f.update()
 im_label = Label(im_frame, bg="white")
 im_label.pack()
 
-
+# Mainloop for window/program
 window.mainloop()

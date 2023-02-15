@@ -301,6 +301,33 @@ def gamma_handler():
     gamma_btn.place(x=150, y=70, anchor="center")
 
 
+# HISTOGRAM
+def histogram(rgb_img, normalized, culmulative):
+    skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get())
+
+def histogram_handler():
+    histo_win = Toplevel(window)
+    histo_win.title = ("Histogram")
+    histo_win.geometry("400x200")
+
+    rgb_img = IntVar(histo_win, 0, "rgb_img")
+    normalized = IntVar(histo_win, 0, "normalized")
+    culmulative = IntVar(histo_win, 0, "culmulative")
+
+    c1 = Checkbutton(histo_win, text='Colour Image', variable=rgb_img)
+    c1.place(x=200, y=50, anchor="center")
+
+    c1 = Checkbutton(histo_win, text='Normalized', variable=normalized)
+    c1.place(x=200, y=70, anchor="center")
+
+    c1 = Checkbutton(histo_win, text='Culmulative', variable=culmulative)
+    c1.place(x=200, y=90, anchor="center")
+
+    histo_btn = Button(histo_win, text="Histogram",
+            command=lambda: histogram(rgb_img, normalized, culmulative))
+    histo_btn.place(x=200, y=150, anchor="center")
+    
+
 
 # Add and configure buttons
 def configure_buttons():
@@ -328,6 +355,9 @@ def configure_buttons():
 
     gamma_btn = Button(f, text="Gamma", command=gamma_handler)
     gamma_btn.place(x=100, y=500, anchor="center")
+
+    histogram_btn = Button(f, text="Histogram", command=histogram_handler)
+    histogram_btn.place(x=100, y=600, anchor="center")
 
     #... all other buttons
 

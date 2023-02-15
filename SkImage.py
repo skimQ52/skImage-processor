@@ -2,6 +2,7 @@ import PIL.Image
 import PIL.ImageTk
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 class SkImage:
 
@@ -306,6 +307,7 @@ class SkImage:
 
 
     # ----------------------- Power Law Mapping -------------------
+
     def gamma(self, level):
 
         for i in range(self.np_arr.shape[0]):
@@ -332,4 +334,29 @@ class SkImage:
         self.img = PIL.Image.fromarray(self.np_arr)
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr
+
+    
+    # ------------------HISTOGRAMS ---------------------
+
+    def histogram(self, rgb, normalized, culmulative):
+
+        # Normalized: Hf(u)/MN
+
+        # Culmulative: Sum of all Hf(u)
+
+        if rgb:
+            colors = ('r','g','b')
+            for channel, col in enumerate(colors):
+                hist, bins = np.histogram(self.np_arr[channel], 256, [0, 256])
+                plt.plot(hist, color = col)
+                plt.xlim([0, 256]) # L = 256
+            plt.title('Histogram for color scale picture')
+
+        else: # Gray level img
+            plt.hist(self.np_arr.ravel(), 256, [0, 256])
+            plt.title('Histogram for gray scale picture')
+
+        plt.xlabel("value")
+        plt.ylabel("pixel count")
+        plt.show()
                     

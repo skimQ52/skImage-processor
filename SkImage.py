@@ -3,9 +3,6 @@ import PIL.ImageTk
 import numpy as np
 import math
 
-SIN=lambda x: int(math.sin(x * 3.141592653589 / 180))
-COS=lambda x: int(math.cos(x * 3.141592653589 / 180))
-
 class SkImage:
 
     def __init__(self):
@@ -287,10 +284,39 @@ class SkImage:
 
                 r, g, b = self.img.getpixel((j, i))
 
-                # Add bias to each rgb
+                # Multiply gain to each rgb
                 r *= gain
                 g *= gain
                 b *= gain
+
+                # Checks to see if in valid range
+                if r > 255: r = 255
+                elif r < 0: r = 0
+                if g > 255: g = 255
+                elif g < 0: g = 0
+                if b > 255: b = 255
+                elif b < 0: b = 0
+
+                self.np_arr[i][j] = r, g, b
+        
+        # Update skImage object
+        self.img = PIL.Image.fromarray(self.np_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
+
+
+    # ----------------------- Power Law Mapping -------------------
+    def gamma(self, level):
+
+        for i in range(self.np_arr.shape[0]):
+            for j in range(self.np_arr.shape[1]):
+
+                r, g, b = self.img.getpixel((j, i))
+
+                # Apply function to each rgb
+                r = pow(r/255, level) * 255
+                g = pow(g/255, level) * 255
+                b = pow(b/255, level) * 255
 
                 # Checks to see if in valid range
                 if r > 255: r = 255

@@ -242,7 +242,7 @@ def bright(bias):
 def bright_handler():
     bright_win = Toplevel(window) # Create new window
 
-    bright_win.title("Brighten Image")
+    bright_win.title("Brightness")
     bright_win.geometry("200x100")
 
     bright_entry = Entry(bright_win, width=3) # Entry input for value of gain
@@ -264,8 +264,7 @@ def contrast(gain):
 
 def contrast_handler():
     contrast_win = Toplevel(window) # Create new window
-
-    contrast_win.title("Contrast Image")
+    contrast_win.title("Contrast")
     contrast_win.geometry("200x100")
 
     contrast_entry = Entry(contrast_win, width=3) # Entry input for value of gain
@@ -278,6 +277,29 @@ def contrast_handler():
     contrast_btn = Button(contrast_win, text="Apply",
             command=lambda: contrast(contrast_entry))
     contrast_btn.place(x=150, y=70, anchor="center")
+
+
+# GAMMA
+def gamma(level):
+    skIm.gamma(float(level.get()))
+    update_image()
+
+def gamma_handler():
+    gamma_win = Toplevel(window)
+    gamma_win.title = ("Gamma")
+    gamma_win.geometry("200x100")
+
+    gamma_entry = Entry(gamma_win, width=3) # Entry input for value of gain
+    gamma_entry.place(x=90, y=40, anchor="center")
+    gamma_entry.insert(END, 0)
+
+    level_lbl = Label(gamma_win, text="level")
+    level_lbl.place(x=110, y=40, anchor="w")
+
+    gamma_btn = Button(gamma_win, text="Apply",
+            command=lambda: gamma(gamma_entry))
+    gamma_btn.place(x=150, y=70, anchor="center")
+
 
 
 # Add and configure buttons
@@ -303,6 +325,9 @@ def configure_buttons():
 
     contrast_btn = Button(f, text="Contrast", command=contrast_handler)
     contrast_btn.place(x=100, y=450, anchor="center")
+
+    gamma_btn = Button(f, text="Gamma", command=gamma_handler)
+    gamma_btn.place(x=100, y=500, anchor="center")
 
     #... all other buttons
 

@@ -67,10 +67,10 @@ def reflect_handler():
 
 
 # SCALING
-def scale(width, height, maintain_aspect, default_ar):
+def scale(width, height, maintain_aspect, default_ar, mode):
     if maintain_aspect.get():
         height = int(width/default_ar) # Keep original aspect ratio, set height accordingly
-    skIm.scale(width, height)
+    skIm.scale(width, height, mode.get())
     update_image()
 
 def scale_ratio(maintain_aspect, scale_width, scale_height):
@@ -108,8 +108,14 @@ def scale_handler():
             command=lambda: scale_ratio(maintain_aspect, scale_width, scale_height))
     c1.place(x=200, y=50, anchor="center")
 
+    scale_cb = ttk.Combobox(scale_win, width=8)
+    scale_cb.place(x=200, y=150, anchor="center")
+    scale_cb['values'] = ('nearest', 'bilinear')
+    scale_cb['state'] = 'readonly'
+    scale_cb.current(1) # default to bilinear
+
     scale_btn = Button(scale_win, text="Scale",
-            command=lambda: scale(int(scale_width.get()), int(scale_height.get()), maintain_aspect, default_ar))
+            command=lambda: scale(int(scale_width.get()), int(scale_height.get()), maintain_aspect, default_ar, scale_cb))
     scale_btn.place(x=350, y=170, anchor="center")
     
 
@@ -223,9 +229,9 @@ def crop_handler():
     bottom_lbl = Label(crop_win, text="pixels to crop off BOTTOM")
     bottom_lbl.place(x=110, y=125, anchor="w")
 
-    scale_btn = Button(crop_win, text="Crop",
+    crop_btn = Button(crop_win, text="Crop",
             command=lambda: crop(crop_left, crop_right, crop_top, crop_bottom))
-    scale_btn.place(x=350, y=170, anchor="center")
+    crop_btn.place(x=350, y=170, anchor="center")
 
 
 # BRIGHTNESS

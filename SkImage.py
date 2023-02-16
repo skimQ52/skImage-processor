@@ -178,7 +178,7 @@ class SkImage:
         if mode != "bilinear":
             for i in range(self.non_rotated.shape[0]):
                 for j in range(self.non_rotated.shape[1]):
-                    
+
                     # Get pixel with respect to centre of image
                     y = self.non_rotated.shape[0] - i - centre_h - 1
                     x = self.non_rotated.shape[1] - j - centre_w - 1
@@ -339,7 +339,45 @@ class SkImage:
     
     # ------------------HISTOGRAMS ---------------------
 
+    def histogram_equ(self):
+        
+        # Create culumulative normalized histogram for each rgb
+        counts_r, bins_r = np.histogram(self.np_arr[:, :, 0], 256, [0, 256])
+        counts_r = np.cumsum(counts_r) # Culmulative sum of all elements
+        counts_r = counts_r / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
+
+        counts_g, bins_g = np.histogram(self.np_arr[:, :, 1], 256, [0, 256])
+        counts_g = np.cumsum(counts_g) # Culmulative sum of all elements
+        counts_g = counts_g / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
+
+        counts_b, bins_b = np.histogram(self.np_arr[:, :, 2], 256, [0, 256])
+        counts_b = np.cumsum(counts_b) # Culmulative sum of all elements
+        counts_b = counts_b / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
+
+        # Create pixel maps for each rgb, relating to the CN histograms
+        map_r = np.floor(255 * counts_r).astype(np.uint8)
+        map_g = np.floor(255 * counts_g).astype(np.uint8)
+        map_b = np.floor(255 * counts_b).astype(np.uint8)
+
+        # Equalize by transforming pixels by using List Comprehension
+        equ_r = [map_r[i] for i in self.np_arr[:, :, 0].flatten()]
+        equ_g = [map_g[i] for i in self.np_arr[:, :, 1].flatten()]
+        equ_b = [map_b[i] for i in self.np_arr[:, :, 2].flatten()]
+
+        # Rebuild an image np array
+        new_arr = np.stack((np.asarray(equ_r), np.asarray(equ_g), np.asarray(equ_b)), axis=1, dtype=np.uint8)
+        new_arr = np.reshape(new_arr, self.np_arr.shape)
+
+        # Update skImage object
+        self.np_arr = new_arr
+        self.img = PIL.Image.fromarray(new_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
+
+
     def histogram(self, rgb, normalized, culmulative):
+
+        plt.clf() # Clear old plots if they exist
 
         if rgb:
             title = "Histogram for color image"

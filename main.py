@@ -305,6 +305,11 @@ def gamma_handler():
 def histogram(rgb_img, normalized, culmulative):
     skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get())
 
+def histogram_equ(rgb_img, normalized, culmulative):
+    skIm.histogram_equ()
+    update_image()
+    skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get()) # Update / Add histogram
+
 def histogram_handler():
     histo_win = Toplevel(window)
     histo_win.title = ("Histogram")
@@ -317,15 +322,19 @@ def histogram_handler():
     c1 = Checkbutton(histo_win, text='Colour Image', variable=rgb_img)
     c1.place(x=200, y=50, anchor="center")
 
-    c1 = Checkbutton(histo_win, text='Normalized', variable=normalized)
-    c1.place(x=200, y=70, anchor="center")
+    c2 = Checkbutton(histo_win, text='Normalized', variable=normalized)
+    c2.place(x=200, y=70, anchor="center")
 
-    c1 = Checkbutton(histo_win, text='Culmulative', variable=culmulative)
-    c1.place(x=200, y=90, anchor="center")
+    c3 = Checkbutton(histo_win, text='Culmulative', variable=culmulative)
+    c3.place(x=200, y=90, anchor="center")
 
-    histo_btn = Button(histo_win, text="Histogram",
+    histo_btn = Button(histo_win, text="Show Histogram",
             command=lambda: histogram(rgb_img, normalized, culmulative))
-    histo_btn.place(x=200, y=150, anchor="center")
+    histo_btn.place(x=200, y=130, anchor="center")
+
+    histo_equ_btn = Button(histo_win, text="Histogram Equalization", 
+            command=lambda: histogram_equ(rgb_img, normalized, culmulative))
+    histo_equ_btn.place(x=200, y=170, anchor="center")
     
 
 

@@ -178,6 +178,7 @@ class SkImage:
         if mode != "bilinear":
             for i in range(self.non_rotated.shape[0]):
                 for j in range(self.non_rotated.shape[1]):
+                    
                     # Get pixel with respect to centre of image
                     y = self.non_rotated.shape[0] - i - centre_h - 1
                     x = self.non_rotated.shape[1] - j - centre_w - 1
@@ -340,22 +341,54 @@ class SkImage:
 
     def histogram(self, rgb, normalized, culmulative):
 
-        # Normalized: Hf(u)/MN
-
-        # Culmulative: Sum of all Hf(u)
-
         if rgb:
+            title = "Histogram for color image"
             colors = ('r','g','b')
-            for channel, col in enumerate(colors):
-                hist, bins = np.histogram(self.np_arr[channel], 256, [0, 256])
-                plt.plot(hist, color = col)
-                plt.xlim([0, 256]) # L = 256
-            plt.title('Histogram for color scale picture')
+
+            # Create histogram for each rgb [i]
+            for i, col in enumerate(colors):
+
+                counts, bins = np.histogram(self.np_arr[:, :, i], 256, [0, 256])
+
+                if culmulative:
+                    counts = np.cumsum(counts) # Culmulative sum of all elements (TODO: Is this cheating? could just make this function...)
+                
+                if normalized:
+                    counts = counts / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
+
+                plt.stairs(counts, bins, color = col) # Add to plot
+
+
+            if culmulative:
+                title = "Culmulative " + title # Prepend to title
+
+            if normalized:
+                plt.ylim([0, 1]) # Normalized maps to [0, 1]  # TODO Should i have this or not
+                title = "Normalized " + title # Prepend to title
+
+            plt.title(title)
+
 
         else: # Gray level img
-            plt.hist(self.np_arr.ravel(), 256, [0, 256])
-            plt.title('Histogram for gray scale picture')
+            title = "Histogram for grayscale image"
+            counts, bins = np.histogram(self.np_arr.ravel(), 256, [0, 256])
+            counts = counts / 3 # divide since it is graylevel not rgb
 
+            if culmulative:
+                counts = np.cumsum(counts) # Culmulative sum of all elements before (TODO: Is this cheating? could just make this function...)
+                title = "Culmulative " + title # Prepend to title
+
+            if normalized:
+                counts = counts / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
+                plt.ylim([0, 1]) # Normalized maps to [0, 1]   # TODO Should i have this or not
+                title = "Normalized " + title # Prepend to title
+
+            # Add to plot and set title
+            plt.stairs(counts, bins)
+            plt.title(title)
+
+
+        plt.xlim([0, 256]) # L = 256
         plt.xlabel("value")
         plt.ylabel("pixel count")
         plt.show()

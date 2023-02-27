@@ -335,6 +335,20 @@ def histogram_handler():
     histo_equ_btn = Button(histo_win, text="Histogram Equalization", 
             command=lambda: histogram_equ(rgb_img, normalized, culmulative))
     histo_equ_btn.place(x=200, y=170, anchor="center")
+
+# CONVOLUTION
+
+def convolution():
+    pass
+
+def convolution_handler():
+    convolution_win = Toplevel(window)
+    convolution_win.title = ("Convolution")
+    convolution_win.geometry("400x200")
+
+    convolution_btn = Button(convolution_win, text="Apply", 
+            command=lambda: convolution())
+    convolution_btn.place(x=200, y=170, anchor="center")
     
 
 
@@ -367,6 +381,9 @@ def configure_buttons():
 
     histogram_btn = Button(f, text="Histogram", command=histogram_handler)
     histogram_btn.place(x=100, y=600, anchor="center")
+
+    convolution_btn = Button(f, text="Convolution", command=convolution_handler)
+    convolution_btn.place(x=100, y=700, anchor="center")
 
     #... all other buttons
 

@@ -355,18 +355,18 @@ def convolution_handler():
     values = []
     entries = []
 
-    x2 = 0
-    y2 = 0
+    d = 0
+    b = 0
     for i in range(3): # 3x3 kernel
         values.append([])
         entries.append([])
         for j in range(3):
             values[i].append(StringVar())
             entries[i].append(Entry(convolution_win, textvariable=values[i][j], width=3))
-            entries[i][j].place(x=170 + x2, y=50 + y2, anchor="center")
-            x2 += 30
-        y2 += 30
-        x2 = 0
+            entries[i][j].place(x=170 + d, y=50 + b, anchor="center")
+            d += 30
+        b += 30
+        d = 0
 
     convolution_btn = Button(convolution_win, text="Apply", 
             command=lambda: convolution(values))

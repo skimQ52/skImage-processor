@@ -308,6 +308,9 @@ def histogram(rgb_img, normalized, culmulative):
 def histogram_equ(rgb_img, normalized, culmulative):
     skIm.histogram_equ()
     update_image()
+    rgb_img.set(1)
+    normalized.set(1)
+    culmulative.set(1)
     skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get()) # Update / Add histogram
 
 def histogram_handler():

@@ -286,7 +286,7 @@ def gamma(level):
 
 def gamma_handler():
     gamma_win = Toplevel(window)
-    gamma_win.title = ("Gamma")
+    gamma_win.title("Gamma")
     gamma_win.geometry("200x100")
 
     gamma_entry = Entry(gamma_win, width=3) # Entry input for value of gain
@@ -312,7 +312,7 @@ def histogram_equ(rgb_img, normalized, culmulative):
 
 def histogram_handler():
     histo_win = Toplevel(window)
-    histo_win.title = ("Histogram")
+    histo_win.title("Histogram")
     histo_win.geometry("400x200")
 
     rgb_img = IntVar(histo_win, 0, "rgb_img")
@@ -338,16 +338,38 @@ def histogram_handler():
 
 # CONVOLUTION
 
-def convolution():
-    pass
+def convolution(values):
+    matrix = []
+    for i in range(3):
+        matrix.append([])
+        for j in range(3):
+            matrix[i].append(values[i][j].get())
+
+    print(matrix)
 
 def convolution_handler():
     convolution_win = Toplevel(window)
-    convolution_win.title = ("Convolution")
+    convolution_win.title("Convolution")
     convolution_win.geometry("400x200")
 
+    values = []
+    entries = []
+
+    x2 = 0
+    y2 = 0
+    for i in range(3): # 3x3 kernel
+        values.append([])
+        entries.append([])
+        for j in range(3):
+            values[i].append(StringVar())
+            entries[i].append(Entry(convolution_win, textvariable=values[i][j], width=3))
+            entries[i][j].place(x=170 + x2, y=50 + y2, anchor="center")
+            x2 += 30
+        y2 += 30
+        x2 = 0
+
     convolution_btn = Button(convolution_win, text="Apply", 
-            command=lambda: convolution())
+            command=lambda: convolution(values))
     convolution_btn.place(x=200, y=170, anchor="center")
     
 

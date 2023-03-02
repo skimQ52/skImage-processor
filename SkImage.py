@@ -4,6 +4,8 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+from skimage import exposure
+
 class SkImage:
 
     def __init__(self):
@@ -439,6 +441,8 @@ class SkImage:
 
         for y in range(self.np_arr.shape[0]): # Through Image
             for x in range(self.np_arr.shape[1]):
+        # for y in range(55, 56):
+            # for x in range(55, 56):
                 sum_r = 0
                 sum_g = 0
                 sum_b = 0
@@ -448,6 +452,8 @@ class SkImage:
                             continue
                         # print(y - j)
                         # print(x - i)
+                        # print(j)
+                        # print(x)
                         r, g, b = self.img.getpixel((x - i, y - j))
                         sum_r += kernel[j][i] * r
                         sum_g += kernel[j][i] * g
@@ -458,6 +464,11 @@ class SkImage:
                 # print(sum_g)
                 # print(sum_b)
                 new_arr[y][x] = int(sum_r), int(sum_g), int(sum_b)
+
+
+        # new_arr = exposure.rescale_intensity(new_arr, in_range=(0, 255))
+        # new_arr = (new_arr * 255).astype("uint8")
+
 
         # Update skImage object
         self.np_arr = new_arr

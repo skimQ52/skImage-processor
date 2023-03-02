@@ -344,7 +344,7 @@ def histogram_handler():
 # CONVOLUTION
 
 def convolution(values):
-    kernel = np.zeros([3, 3, 1], dtype=np.uint8)
+    kernel = np.zeros([3, 3, 1])
     for i in range(3):
         # kernel.append([])
         for j in range(3):

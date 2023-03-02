@@ -6,6 +6,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter.messagebox import showinfo
+from fractions import Fraction
+from decimal import Decimal
 
 from SkImage import SkImage
 
@@ -342,13 +344,14 @@ def histogram_handler():
 # CONVOLUTION
 
 def convolution(values):
-    matrix = []
+    kernel = np.zeros([3, 3, 1], dtype=np.uint8)
     for i in range(3):
-        matrix.append([])
+        # kernel.append([])
         for j in range(3):
-            matrix[i].append(values[i][j].get())
-
-    print(matrix)
+            kernel[i][j] = float(Fraction(values[i][j].get()))
+    print(kernel)
+    skIm.convolve(kernel)
+    update_image()
 
 def convolution_handler():
     convolution_win = Toplevel(window)

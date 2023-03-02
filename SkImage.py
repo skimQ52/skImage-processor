@@ -430,4 +430,66 @@ class SkImage:
         plt.xlabel("value")
         plt.ylabel("pixel count")
         plt.show()
-                    
+        
+
+    def convolve(self, kernel):
+
+        new_arr = np.empty([self.np_arr.shape[0], self.np_arr.shape[1], 3], dtype=np.uint8)
+        print(new_arr.shape)
+
+        for y in range(self.np_arr.shape[0]): # Through Image
+            for x in range(self.np_arr.shape[1]):
+                sum_r = 0
+                sum_g = 0
+                sum_b = 0
+                for i in range((-1)*(kernel.shape[1]-1)//2, (kernel.shape[1]-1)//2): # Through Kernel
+                    for j in range((-1)*(kernel.shape[0]-1)//2, (kernel.shape[0]-1)//2):
+                        if (y-j >= self.np_arr.shape[0] or y-j < 0 or x-i >= self.np_arr.shape[1] or x-i < 0):
+                            continue
+                        # print(y - j)
+                        # print(x - i)
+                        r, g, b = self.img.getpixel((x - i, y - j))
+                        sum_r += kernel[j][i] * r
+                        sum_g += kernel[j][i] * g
+                        sum_b += kernel[j][i] * b
+
+                        # sum += kernel(i,j) * f(x - i, y - j)
+                # print(sum_r)
+                # print(sum_g)
+                # print(sum_b)
+                new_arr[y][x] = int(sum_r), int(sum_g), int(sum_b)
+
+        # Update skImage object
+        self.np_arr = new_arr
+        self.img = PIL.Image.fromarray(new_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
+
+        
+        # pad = (kernel.np_arr.shape[0] - 1) // 2 # How much needs to be padded onto edges for kernel
+        # image = cv2.copyMakeBorder(image, pad, pad, pad, pad,
+        #     cv2.BORDER_REPLICATE)
+        # output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1]), dtype="float32")
+
+        # # loop over the input image, "sliding" the kernel across
+        # # each (x, y)-coordinate from left-to-right and top to
+        # # bottom
+        # for y in np.arange(pad, iH + pad):
+        #     for x in np.arange(pad, iW + pad):
+        #         # extract the ROI of the image by extracting the
+        #         # *center* region of the current (x, y)-coordinates
+        #         # dimensions
+        #         roi = image[y - pad:y + pad + 1, x - pad:x + pad + 1]
+        #         # perform the actual convolution by taking the
+        #         # element-wise multiplicate between the ROI and
+        #         # the kernel, then summing the matrix
+        #         k = (roi * kernel).sum()
+        #         # store the convolved value in the output (x,y)-
+        #         # coordinate of the output image
+        #         output[y - pad, x - pad] = k
+
+        # # rescale the output image to be in the range [0, 255]
+        # output = rescale_intensity(output, in_range=(0, 255))
+        # output = (output * 255).astype("uint8")
+        # # return the output image
+        # return output

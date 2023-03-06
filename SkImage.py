@@ -434,73 +434,129 @@ class SkImage:
         plt.show()
         
 
-    def convolve(self, kernel):
+    def convolution(self, kernel):
 
-        new_arr = np.empty([self.np_arr.shape[0], self.np_arr.shape[1], 3], dtype=np.uint8)
-        print(new_arr.shape)
+        # if np.linalg.matrix_rank(kernel) == 1: # Separable kernel
+        #     self.convolve(h1)
+        #     self.convolve(h2)
+        # else:
+        #     # Convolution of entire kernel
+        self.convolve(kernel)
+
+
+    def convolve(self, h):
+        
+        # np array to hold output of convolution (NOT NORMALIZED)
+        output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], self.np_arr.shape[2]))
+        # print(new_arr.shape)
+
+        h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
+        k = max(h.shape[0], h.shape[1])
+        padding = (k - 1)
+        offset = padding // 2
+        print(h)
+        # Add zero padding to the image
+        image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, self.np_arr.shape[2]), dtype=np.uint8)
+        image_padded[offset:-offset, offset:-offset] = self.np_arr
+
+
+        min_r = 999999
+        min_g = 999999
+        min_b = 999999
+
+        max_r = -999999
+        max_g = -999999
+        max_b = -999999
 
         for y in range(self.np_arr.shape[0]): # Through Image
             for x in range(self.np_arr.shape[1]):
-        # for y in range(55, 56):
-            # for x in range(55, 56):
-                sum_r = 0
-                sum_g = 0
-                sum_b = 0
-                for i in range((-1)*(kernel.shape[1]-1)//2, (kernel.shape[1]-1)//2): # Through Kernel
-                    for j in range((-1)*(kernel.shape[0]-1)//2, (kernel.shape[0]-1)//2):
-                        if (y-j >= self.np_arr.shape[0] or y-j < 0 or x-i >= self.np_arr.shape[1] or x-i < 0):
-                            continue
-                        # print(y - j)
-                        # print(x - i)
-                        # print(j)
-                        # print(x)
-                        r, g, b = self.img.getpixel((x - i, y - j))
-                        sum_r += kernel[j][i] * r
-                        sum_g += kernel[j][i] * g
-                        sum_b += kernel[j][i] * b
+                # sum_r = 0
+                # sum_g = 0
+                # sum_b = 0
+                sum_r = np.sum(h * image_padded[y:y+k, x:x+k, 0])
+                sum_g = np.sum(h * image_padded[y:y+k, x:x+k, 1])
+                sum_b = np.sum(h * image_padded[y:y+k, x:x+k, 2])
+                if sum_r < min_r:
+                    min_r = sum_r
+                if sum_g < min_g:
+                    min_g = sum_g
+                if sum_b < min_b:
+                    min_b = sum_b
 
-                        # sum += kernel(i,j) * f(x - i, y - j)
+                if sum_r > max_r:
+                    max_r = sum_r
+                if sum_g > max_g:
+                    max_g = sum_g
+                if sum_b > max_b:
+                    max_b = sum_b
+                output[y,x] = sum_r, sum_g, sum_b # Not ints???????? I THINK TODO
                 # print(sum_r)
                 # print(sum_g)
                 # print(sum_b)
-                new_arr[y][x] = int(sum_r), int(sum_g), int(sum_b)
+                # print(output[y,x])
+                # print(self.np_arr[y,x])
+
+
+        # Normalize to visible output
+        # min_r = output[..., 0].min()
+        # min_g = output[..., 1].min()
+        # min_b = output[..., 2].min()
+
+        # max_r = output[..., 0].max()
+        # max_g = output[..., 0].max()
+        # max_b = output[..., 0].max()
+
+        print(min_r)
+        print(min_g)
+        print(min_b)
+
+        print(max_r)
+        print(max_g)
+        print(max_b)
+        print(output[50,50,0])
+        print(output[50,50,1])
+        print(output[50,50,1])
+        # print(np.max(output[y, x]))
+        # print(np.min(output[y, x]))
+        new_arr = np.zeros_like(self.np_arr)
+        for y in range(output.shape[0]): # Through output array
+            for x in range(output.shape[1]):
+                new_r = (output[y,x,0] - min_r) * (255-0) / (max_r - min_r)
+                new_g = (output[y,x,1] - min_g) * (255-0) / (max_g - min_g) # TODO NOT WORKING I THINK
+                new_b = (output[y,x,2] - min_b) * (255-0) / (max_b - min_b)
+                new_arr[y,x] = int(new_r), int(new_g), int(new_b)
+
+
+                # for i in range((-1)*(h.shape[1]-1)//2, (h.shape[1]-1)//2): # Through Kernel
+                #     for j in range((-1)*(h.shape[0]-1)//2, (h.shape[0]-1)//2):
+                #         if (y-j >= self.np_arr.shape[0] or y-j < 0 or x-i >= self.np_arr.shape[1] or x-i < 0):
+                #             continue
+                #         # print(y - j)
+                #         # print(x - i)
+                #         # print(j)
+                #         # print(x)
+                #         r, g, b = self.img.getpixel((x - i, y - j))
+                #         sum_r += h[j][i] * r
+                #         sum_g += h[j][i] * g
+                #         sum_b += h[j][i] * b
+
+                #         # sum += kernel(i,j) * f(x - i, y - j)
+                # # print(sum_r)
+                # # print(sum_g)
+                # # print(sum_b)
+                # new_arr[y][x] = int(sum_r), int(sum_g), int(sum_b)
 
 
         # new_arr = exposure.rescale_intensity(new_arr, in_range=(0, 255))
         # new_arr = (new_arr * 255).astype("uint8")
+        print(output[50,50,0])
+        print(output[50,50,1])
+        print(output[50,50,1])
 
-
-        # Update skImage object
+        # Update some of skImage object
         self.np_arr = new_arr
         self.img = PIL.Image.fromarray(new_arr)
+        # Update rest of skImage object
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr
-
-        
-        # pad = (kernel.np_arr.shape[0] - 1) // 2 # How much needs to be padded onto edges for kernel
-        # image = cv2.copyMakeBorder(image, pad, pad, pad, pad,
-        #     cv2.BORDER_REPLICATE)
-        # output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1]), dtype="float32")
-
-        # # loop over the input image, "sliding" the kernel across
-        # # each (x, y)-coordinate from left-to-right and top to
-        # # bottom
-        # for y in np.arange(pad, iH + pad):
-        #     for x in np.arange(pad, iW + pad):
-        #         # extract the ROI of the image by extracting the
-        #         # *center* region of the current (x, y)-coordinates
-        #         # dimensions
-        #         roi = image[y - pad:y + pad + 1, x - pad:x + pad + 1]
-        #         # perform the actual convolution by taking the
-        #         # element-wise multiplicate between the ROI and
-        #         # the kernel, then summing the matrix
-        #         k = (roi * kernel).sum()
-        #         # store the convolved value in the output (x,y)-
-        #         # coordinate of the output image
-        #         output[y - pad, x - pad] = k
-
-        # # rescale the output image to be in the range [0, 255]
-        # output = rescale_intensity(output, in_range=(0, 255))
-        # output = (output * 255).astype("uint8")
-        # # return the output image
-        # return output
+        print("updated")

@@ -344,12 +344,13 @@ def histogram_handler():
 # CONVOLUTION
 
 def convolution(values):
-    kernel = np.zeros([3, 3, 1])
+    kernel = np.zeros([3, 3])
     for i in range(3):
-        # kernel.append([])
         for j in range(3):
             kernel[i][j] = float(Fraction(values[i][j].get()))
-    print(kernel)
+
+    print(kernel) # For testing
+    
     skIm.convolve(kernel)
     update_image()
 

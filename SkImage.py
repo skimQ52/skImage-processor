@@ -448,110 +448,46 @@ class SkImage:
         
         # np array to hold output of convolution (NOT NORMALIZED)
         output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], self.np_arr.shape[2]))
-        # print(new_arr.shape)
 
         h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
+
+        # Border handling
         k = max(h.shape[0], h.shape[1])
         padding = (k - 1)
         offset = padding // 2
-        print(h)
+
         # Add zero padding to the image
         image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, self.np_arr.shape[2]), dtype=np.uint8)
         image_padded[offset:-offset, offset:-offset] = self.np_arr
 
-
-        min_r = 999999
-        min_g = 999999
-        min_b = 999999
-
-        max_r = -999999
-        max_g = -999999
-        max_b = -999999
-
-        for y in range(self.np_arr.shape[0]): # Through Image
+        # Convolution process through image
+        for y in range(self.np_arr.shape[0]):
             for x in range(self.np_arr.shape[1]):
-                # sum_r = 0
-                # sum_g = 0
-                # sum_b = 0
+
+                # Perform the convolution on each rgb
                 sum_r = np.sum(h * image_padded[y:y+k, x:x+k, 0])
                 sum_g = np.sum(h * image_padded[y:y+k, x:x+k, 1])
                 sum_b = np.sum(h * image_padded[y:y+k, x:x+k, 2])
-                if sum_r < min_r:
-                    min_r = sum_r
-                if sum_g < min_g:
-                    min_g = sum_g
-                if sum_b < min_b:
-                    min_b = sum_b
 
-                if sum_r > max_r:
-                    max_r = sum_r
-                if sum_g > max_g:
-                    max_g = sum_g
-                if sum_b > max_b:
-                    max_b = sum_b
-                output[y,x] = sum_r, sum_g, sum_b # Not ints???????? I THINK TODO
-                # print(sum_r)
-                # print(sum_g)
-                # print(sum_b)
-                # print(output[y,x])
-                # print(self.np_arr[y,x])
+                # Save result of convolution at (x, y) (not visible as an image)
+                output[y,x] = sum_r, sum_g, sum_b
 
+        # Get min and max values of rgb
+        min_r = output[..., 0].min()
+        min_g = output[..., 1].min()
+        min_b = output[..., 2].min()
+        max_r = output[..., 0].max()
+        max_g = output[..., 1].max()
+        max_b = output[..., 2].max()
 
-        # Normalize to visible output
-        # min_r = output[..., 0].min()
-        # min_g = output[..., 1].min()
-        # min_b = output[..., 2].min()
-
-        # max_r = output[..., 0].max()
-        # max_g = output[..., 0].max()
-        # max_b = output[..., 0].max()
-
-        print(min_r)
-        print(min_g)
-        print(min_b)
-
-        print(max_r)
-        print(max_g)
-        print(max_b)
-        print(output[50,50,0])
-        print(output[50,50,1])
-        print(output[50,50,1])
-        # print(np.max(output[y, x]))
-        # print(np.min(output[y, x]))
-        new_arr = np.zeros_like(self.np_arr)
+        # Normalize to visible output (0-255)
+        new_arr = np.zeros_like(self.np_arr) # Final np array for convolution
         for y in range(output.shape[0]): # Through output array
             for x in range(output.shape[1]):
-                new_r = (output[y,x,0] - min_r) * (255-0) / (max_r - min_r)
-                new_g = (output[y,x,1] - min_g) * (255-0) / (max_g - min_g) # TODO NOT WORKING I THINK
-                new_b = (output[y,x,2] - min_b) * (255-0) / (max_b - min_b)
+                new_r = (output[y,x,0] - min_r) * (255) / (max_r - min_r)
+                new_g = (output[y,x,1] - min_g) * (255) / (max_g - min_g)
+                new_b = (output[y,x,2] - min_b) * (255) / (max_b - min_b)
                 new_arr[y,x] = int(new_r), int(new_g), int(new_b)
-
-
-                # for i in range((-1)*(h.shape[1]-1)//2, (h.shape[1]-1)//2): # Through Kernel
-                #     for j in range((-1)*(h.shape[0]-1)//2, (h.shape[0]-1)//2):
-                #         if (y-j >= self.np_arr.shape[0] or y-j < 0 or x-i >= self.np_arr.shape[1] or x-i < 0):
-                #             continue
-                #         # print(y - j)
-                #         # print(x - i)
-                #         # print(j)
-                #         # print(x)
-                #         r, g, b = self.img.getpixel((x - i, y - j))
-                #         sum_r += h[j][i] * r
-                #         sum_g += h[j][i] * g
-                #         sum_b += h[j][i] * b
-
-                #         # sum += kernel(i,j) * f(x - i, y - j)
-                # # print(sum_r)
-                # # print(sum_g)
-                # # print(sum_b)
-                # new_arr[y][x] = int(sum_r), int(sum_g), int(sum_b)
-
-
-        # new_arr = exposure.rescale_intensity(new_arr, in_range=(0, 255))
-        # new_arr = (new_arr * 255).astype("uint8")
-        print(output[50,50,0])
-        print(output[50,50,1])
-        print(output[50,50,1])
 
         # Update some of skImage object
         self.np_arr = new_arr
@@ -559,4 +495,3 @@ class SkImage:
         # Update rest of skImage object
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr
-        print("updated")

@@ -341,43 +341,70 @@ def histogram_handler():
             command=lambda: histogram_equ(rgb_img, normalized, culmulative))
     histo_equ_btn.place(x=200, y=170, anchor="center")
 
-# CONVOLUTION
 
+# CONVOLUTION
 def convolution(values):
-    kernel = np.zeros([3, 3])
-    for i in range(3):
-        for j in range(3):
+
+    kernel = np.zeros([len(values), len(values[0])])
+    for i in range(len(values)): # Num Rows
+        for j in range(len(values[i])):
             kernel[i][j] = float(Fraction(values[i][j].get()))
 
     print(kernel) # For testing
-    
     skIm.convolve(kernel)
     update_image()
+
+def custom_convolve_handler(width_entry, height_entry):
+
+    m = int(width_entry.get())
+    n = int(height_entry.get())
+
+    convolution_win = Toplevel(window)
+    convolution_win.title("Custom convolution")
+    # Dynamicaly set size of window according to size of kernel
+    convolution_win.geometry(str((m*30)+100)+"x"+str((n*30)+100))
+
+    values = []
+    entries = []
+    
+    # Building Kernel
+    x_pad = 0
+    y_pad = 0
+    for i in range(n): # 3x3 kernel
+        values.append([])
+        entries.append([])
+        for j in range(m):
+            values[i].append(StringVar())
+            entries[i].append(Entry(convolution_win, textvariable=values[i][j], width=3))
+            entries[i][j].place(x=50 + x_pad, y=50 + y_pad, anchor="center")
+            x_pad += 30
+        y_pad += 30
+        x_pad = 0
+    
+    convolution_btn = Button(convolution_win, text="Apply", 
+            command=lambda: convolution(values))
+    convolution_btn.place(x=(m*30), y=(n*30)+65, anchor="w")
 
 def convolution_handler():
     convolution_win = Toplevel(window)
     convolution_win.title("Convolution")
     convolution_win.geometry("400x200")
 
-    values = []
-    entries = []
+    # Custom Convolution Kernel Size
+    width_entry = Entry(convolution_win, width=2) # Entry input for the width of the kernel
+    width_entry.place(x=40, y=40, anchor="center")
+    width_entry.insert(END, 3) # Default of 3
 
-    d = 0
-    b = 0
-    for i in range(3): # 3x3 kernel
-        values.append([])
-        entries.append([])
-        for j in range(3):
-            values[i].append(StringVar())
-            entries[i].append(Entry(convolution_win, textvariable=values[i][j], width=3))
-            entries[i][j].place(x=170 + d, y=50 + b, anchor="center")
-            d += 30
-        b += 30
-        d = 0
+    x_lbl = Label(convolution_win, text="x")
+    x_lbl.place(x=60, y=40, anchor="center")
 
-    convolution_btn = Button(convolution_win, text="Apply", 
-            command=lambda: convolution(values))
-    convolution_btn.place(x=200, y=170, anchor="center")
+    height_entry = Entry(convolution_win, width=2) # Entry input for the height of the kernel
+    height_entry.place(x=80, y=40, anchor="center")
+    height_entry.insert(END, 3) # Default of 3
+
+    custom_btn = Button(convolution_win, text="Custom", 
+            command=lambda: custom_convolve_handler(width_entry, height_entry))
+    custom_btn.place(x=25, y=70, anchor="w")
     
 
 

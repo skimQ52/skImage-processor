@@ -354,15 +354,15 @@ def convolution(values):
     skIm.convolve(kernel)
     update_image()
 
-def custom_convolve_handler(width_entry, height_entry):
+def convolve_handler(kernel, preset):
 
-    m = int(width_entry.get())
-    n = int(height_entry.get())
+    m = int(kernel.shape[1])
+    n = int(kernel.shape[0])
 
-    convolution_win = Toplevel(window)
-    convolution_win.title("Custom convolution")
+    convolve_win = Toplevel(window)
+    convolve_win.title("Convolution")
     # Dynamicaly set size of window according to size of kernel
-    convolution_win.geometry(str((m*30)+100)+"x"+str((n*30)+100))
+    convolve_win.geometry(str((m*30)+100)+"x"+str((n*30)+100))
 
     values = []
     entries = []
@@ -370,24 +370,39 @@ def custom_convolve_handler(width_entry, height_entry):
     # Building Kernel
     x_pad = 0
     y_pad = 0
-    for i in range(n): # 3x3 kernel
+
+    for i in range(n): # mxn kernel, n is height
         values.append([])
         entries.append([])
         for j in range(m):
             values[i].append(StringVar())
-            entries[i].append(Entry(convolution_win, textvariable=values[i][j], width=3))
+            entries[i].append(Entry(convolve_win, textvariable=values[i][j], width=3))
             entries[i][j].place(x=50 + x_pad, y=50 + y_pad, anchor="center")
+            if preset: entries[i][j].insert(END, kernel[i][j])
             x_pad += 30
         y_pad += 30
         x_pad = 0
     
-    convolution_btn = Button(convolution_win, text="Apply", 
+    convolve_btn = Button(convolve_win, text="Apply", 
             command=lambda: convolution(values))
-    convolution_btn.place(x=(m*30), y=(n*30)+65, anchor="w")
+    convolve_btn.place(x=(m*30), y=(n*30)+65, anchor="w")
 
+
+def convolve_preset(preset):
+
+    kernel = np.empty(0) # kernel starts at nothing
+
+    if preset == "mean":
+        kernel = np.ones((3, 3), dtype=np.uint8) # All ones for mean uniform filtering
+    else:
+        kernel = np.zeros((3, 3)) # failsafe, zeros
+
+    # Call convolve function to create kernel visible for user with preset filled in  
+    convolve_handler(kernel, True)
+    
 def convolution_handler():
     convolution_win = Toplevel(window)
-    convolution_win.title("Convolution")
+    convolution_win.title("Configure Convolution")
     convolution_win.geometry("400x200")
 
     # Custom Convolution Kernel Size
@@ -402,10 +417,19 @@ def convolution_handler():
     height_entry.place(x=80, y=40, anchor="center")
     height_entry.insert(END, 3) # Default of 3
 
+    kernel = np.empty((int(height_entry.get()), int(width_entry.get()))) # Empty kernel for custom convolutions
     custom_btn = Button(convolution_win, text="Custom", 
-            command=lambda: custom_convolve_handler(width_entry, height_entry))
+            command=lambda: convolve_handler(kernel, preset=False))
     custom_btn.place(x=25, y=70, anchor="w")
-    
+
+    # Presets
+    presets_lbl = Label(convolution_win, text="Presets", underline="7")
+    presets_lbl.place(x=300, y=40, anchor="center")
+
+    mean = Button(convolution_win, text="Mean", 
+            command=lambda: convolve_preset("mean"))
+    mean.place(x=300, y=60, anchor="center")
+
 
 
 # Add and configure buttons

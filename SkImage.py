@@ -465,9 +465,19 @@ class SkImage:
             for x in range(self.np_arr.shape[1]):
 
                 # Perform the convolution on each rgb
-                sum_r = np.sum(h * image_padded[y:y+k, x:x+k, 0])
-                sum_g = np.sum(h * image_padded[y:y+k, x:x+k, 1])
-                sum_b = np.sum(h * image_padded[y:y+k, x:x+k, 2])
+
+                # sum_r = (h * image_padded[y: y+k, x: x+k, 0]).sum()
+                # sum_g = (h * image_padded[y: y+k, x: x+k, 1]).sum()
+                # sum_b = (h * image_padded[y: y+k, x: x+k, 2]).sum()
+                sum_r = 0
+                sum_g = 0
+                sum_b = 0
+
+                for v in range(h.shape[0]):
+                    for u in range(h.shape[1]):
+                        sum_r += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 0]
+                        sum_g += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 1]
+                        sum_b += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 2]
 
                 # Save result of convolution at (x, y) (not visible as an image)
                 output[y,x] = sum_r, sum_g, sum_b
@@ -480,10 +490,16 @@ class SkImage:
         max_g = output[..., 1].max()
         max_b = output[..., 2].max()
 
+        min_p = min(min(min_r, min_g), min(min_g, min_b))
+        max_p = max(max(max_r, max_g), max(max_g, max_b))
+
         # Normalize to visible output (0-255)
         new_arr = np.zeros_like(self.np_arr) # Final np array for convolution
         for y in range(output.shape[0]): # Through output array
             for x in range(output.shape[1]):
+                # print(output[y,x,0])
+                # print(output[y,x,1])
+                # print(output[y,x,2])
                 new_r = (output[y,x,0] - min_r) * (255) / (max_r - min_r)
                 new_g = (output[y,x,1] - min_g) * (255) / (max_g - min_g)
                 new_b = (output[y,x,2] - min_b) * (255) / (max_b - min_b)

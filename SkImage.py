@@ -434,80 +434,97 @@ class SkImage:
         plt.show()
         
 
-    def convolution(self, kernel):
+    def convolution(self, kernel, border):
 
         # if np.linalg.matrix_rank(kernel) == 1: # Separable kernel
         #     self.convolve(h1)
         #     self.convolve(h2)
         # else:
         #     # Convolution of entire kernel
-        self.convolve(kernel)
+        self.convolve(kernel, border)
 
 
-    def convolve(self, h):
-        
+    def convolve(self, h, border):
+
+        # h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
+
+        k_height, k_width = h.shape[0], h.shape[1]
+
         # np array to hold output of convolution (NOT NORMALIZED)
-        output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], self.np_arr.shape[2]))
+        output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], 3))
 
-        h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
 
-        # Border handling
-        k = max(h.shape[0], h.shape[1])
-        padding = (k - 1)
-        offset = padding // 2
+        # Truncate border
+        if border == "truncate":
+            for y in range(k_height//2, self.np_arr.shape[0]-k_height//2-1):
+                for x in range(k_width//2, self.np_arr.shape[1]-k_width//2-1):
 
-        # Add zero padding to the image
-        image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, self.np_arr.shape[2]), dtype=np.uint8)
-        image_padded[offset:-offset, offset:-offset] = self.np_arr
+                    # Perform the convolution on each rgb
+                    window = self.np_arr[y-k_height//2 : y+k_height//2+1, x-k_width//2 : x+k_width//2+1]
 
-        # Convolution process through image
-        for y in range(self.np_arr.shape[0]):
-            for x in range(self.np_arr.shape[1]):
+                    output[y, x, 0] = int((window[:, :, 0] * h).sum())
+                    output[y, x, 1] = int((window[:, :, 1] * h).sum())
+                    output[y, x, 2] = int((window[:, :, 2] * h).sum())
 
-                # Perform the convolution on each rgb
 
-                # sum_r = (h * image_padded[y: y+k, x: x+k, 0]).sum()
-                # sum_g = (h * image_padded[y: y+k, x: x+k, 1]).sum()
-                # sum_b = (h * image_padded[y: y+k, x: x+k, 2]).sum()
-                sum_r = 0
-                sum_g = 0
-                sum_b = 0
 
-                for v in range(h.shape[0]):
-                    for u in range(h.shape[1]):
-                        sum_r += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 0]
-                        sum_g += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 1]
-                        sum_b += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 2]
+        else: # Zero Padding for border handling
+            # Border handling
+            k = max(h.shape[0], h.shape[1])
+            padding = (k - 1)
+            offset = padding // 2
 
-                # Save result of convolution at (x, y) (not visible as an image)
-                output[y,x] = sum_r, sum_g, sum_b
+            # Add zero padding to the image
+            image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, 3))
+            image_padded[offset:-offset, offset:-offset] = self.np_arr
+
+            for y in range(self.np_arr.shape[0]):
+                for x in range(self.np_arr.shape[1]):
+
+                    output[y, x, 0] = (h * image_padded[y: y+k, x: x+k, 0]).sum()
+                    output[y, x, 1] = (h * image_padded[y: y+k, x: x+k, 1]).sum()
+                    output[y, x, 2] = (h * image_padded[y: y+k, x: x+k, 2]).sum()
+
+                # for v in range(h.shape[0]):
+                #     for u in range(h.shape[1]):
+                #         output[y, x, 0] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 0]
+                #         output[y, x, 1] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 1]
+                #         output[y, x, 2] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 2]
+
 
         # Get min and max values of rgb
-        min_r = output[..., 0].min()
-        min_g = output[..., 1].min()
-        min_b = output[..., 2].min()
-        max_r = output[..., 0].max()
-        max_g = output[..., 1].max()
-        max_b = output[..., 2].max()
+        # min_r = output[..., 0].min()
+        # min_g = output[..., 1].min()
+        # min_b = output[..., 2].min()
+        # max_r = output[..., 0].max()
+        # max_g = output[..., 1].max()
+        # max_b = output[..., 2].max()
 
-        min_p = min(min(min_r, min_g), min(min_g, min_b))
-        max_p = max(max(max_r, max_g), max(max_g, max_b))
+        # print(max_r)
+        # print(max_g)
+        # print(max_b)
 
         # Normalize to visible output (0-255)
-        new_arr = np.zeros_like(self.np_arr) # Final np array for convolution
-        for y in range(output.shape[0]): # Through output array
-            for x in range(output.shape[1]):
-                # print(output[y,x,0])
-                # print(output[y,x,1])
-                # print(output[y,x,2])
-                new_r = (output[y,x,0] - min_r) * (255) / (max_r - min_r)
-                new_g = (output[y,x,1] - min_g) * (255) / (max_g - min_g)
-                new_b = (output[y,x,2] - min_b) * (255) / (max_b - min_b)
-                new_arr[y,x] = int(new_r), int(new_g), int(new_b)
+        # if max_r > 255 or max_g > 255 or max_b > 255:
+            # output[:, :, 0] = (output[:, :, 0] - min_r) * (255) / (max_r - min_r)
+            # output[:, :, 1] = (output[:, :, 1] - min_g) * (255) / (max_g - min_g)
+            # output[:, :, 2] = (output[:, :, 2] - min_b) * (255) / (max_b - min_b)
+
+
+        #     new_arr = np.ones_like(self.np_arr) # Final np array for convolution
+        #     for y in range(output.shape[0]): # Through output array
+        #         for x in range(output.shape[1]):
+        #             new_r = (output[y,x,0] - min_r) * (255) / (max_r - min_r)
+        #             new_g = (output[y,x,1] - min_g) * (255) / (max_g - min_g)
+        #             new_b = (output[y,x,2] - min_b) * (255) / (max_b - min_b)
+        #             new_arr[y,x] = int(new_r), int(new_g), int(new_b)
+
+
+        new_arr = np.clip(output, 0, 255)
 
         # Update some of skImage object
-        self.np_arr = new_arr
-        self.img = PIL.Image.fromarray(new_arr)
+        self.np_arr = new_arr.astype(np.uint8)
+        self.img = PIL.Image.fromarray(new_arr.astype(np.uint8))
         # Update rest of skImage object
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr

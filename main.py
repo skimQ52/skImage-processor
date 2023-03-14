@@ -343,7 +343,7 @@ def histogram_handler():
 
 
 # CONVOLUTION
-def convolution(values):
+def convolution(values, mode):
 
     kernel = np.zeros([len(values), len(values[0])])
     for i in range(len(values)): # Num Rows
@@ -351,10 +351,10 @@ def convolution(values):
             kernel[i][j] = float(Fraction(values[i][j].get()))
 
     print(kernel) # For testing
-    skIm.convolve(kernel)
+    skIm.convolve(kernel, mode.get())
     update_image()
 
-def convolve_handler(kernel, preset):
+def convolve_handler(kernel, mode, preset):
 
     m = int(kernel.shape[1])
     n = int(kernel.shape[0])
@@ -384,21 +384,25 @@ def convolve_handler(kernel, preset):
         x_pad = 0
     
     convolve_btn = Button(convolve_win, text="Apply", 
-            command=lambda: convolution(values))
+            command=lambda: convolution(values, mode))
     convolve_btn.place(x=(m*30), y=(n*30)+65, anchor="w")
 
 
-def convolve_preset(preset):
+def convolve_preset(preset, mode):
 
     kernel = np.empty(0) # kernel starts at nothing
 
     if preset == "mean":
-        kernel = np.ones((3, 3), dtype=np.uint8) # All ones for mean uniform filtering
+        kernel = np.array([["1/9", "1/9", "1/9"], ["1/9", "1/9", "1/9"], ["1/9", "1/9", "1/9"]])
+    elif preset == "sharpen":
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    elif preset == "laplacian":
+        kernel = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
     else:
         kernel = np.zeros((3, 3)) # failsafe, zeros
 
     # Call convolve function to create kernel visible for user with preset filled in  
-    convolve_handler(kernel, True)
+    convolve_handler(kernel, mode, True)
     
 def convolution_handler():
     convolution_win = Toplevel(window)
@@ -417,9 +421,15 @@ def convolution_handler():
     height_entry.place(x=80, y=40, anchor="center")
     height_entry.insert(END, 3) # Default of 3
 
+    border_cb = ttk.Combobox(convolution_win, width=8)
+    border_cb.place(x=200, y=150, anchor="center")
+    border_cb['values'] = ('truncate', 'zero')
+    border_cb['state'] = 'readonly'
+    border_cb.current(0) # default to truncate
+
     kernel = np.empty((int(height_entry.get()), int(width_entry.get()))) # Empty kernel for custom convolutions
     custom_btn = Button(convolution_win, text="Custom", 
-            command=lambda: convolve_handler(kernel, preset=False))
+            command=lambda: convolve_handler(kernel, border_cb, preset=False))
     custom_btn.place(x=25, y=70, anchor="w")
 
     # Presets
@@ -427,9 +437,16 @@ def convolution_handler():
     presets_lbl.place(x=300, y=40, anchor="center")
 
     mean = Button(convolution_win, text="Mean", 
-            command=lambda: convolve_preset("mean"))
+            command=lambda: convolve_preset("mean", border_cb))
     mean.place(x=300, y=60, anchor="center")
 
+    sharpen = Button(convolution_win, text="Sharpen", 
+            command=lambda: convolve_preset("sharpen", border_cb))
+    sharpen.place(x=300, y=90, anchor="center")
+
+    laplacian = Button(convolution_win, text="Laplacian", 
+            command=lambda: convolve_preset("laplacian", border_cb))
+    laplacian.place(x=300, y=120, anchor="center")
 
 
 # Add and configure buttons

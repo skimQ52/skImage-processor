@@ -31,6 +31,9 @@ def upload():
     skIm.img = PIL.Image.open(filename)
     skIm.img_origin = PIL.Image.open(filename)
     skIm.np_arr = np.array(skIm.img)
+    if len(skIm.np_arr.shape) == 2: # Convert to RGB (even if grayscale) for simplicity
+        skIm.np_arr = np.stack((skIm.np_arr,)*3, axis=-1)
+        skIm.img = PIL.Image.fromarray(skIm.np_arr)
     skIm.non_rotated = skIm.np_arr
 
     update_image()
@@ -43,6 +46,9 @@ def reset_image():
     skIm.img = skIm.img_origin
     skIm.np_arr = np.array(skIm.img)
     skIm.tk_img = PIL.ImageTk.PhotoImage(skIm.img)
+    if len(skIm.np_arr.shape) == 2: # Convert to RGB (even if grayscale) for simplicity
+        skIm.np_arr = np.stack((skIm.np_arr,)*3, axis=-1)
+        skIm.img = PIL.Image.fromarray(skIm.np_arr)
     skIm.non_rotated = skIm.np_arr
     skIm.degrees = 0
     update_image()
@@ -462,6 +468,28 @@ def convolution_handler():
     gaussian5.place(x=320, y=150, anchor="center")
 
 
+# ORDER STATISTIC FILTERING
+def order_stat(mode):
+    skIm.order_filter(mode)
+    update_image()
+
+def order_stat_handler():
+    order_stat_win = Toplevel(window)
+    order_stat_win.title("Order Statistic Filtering")
+    order_stat_win.geometry("400x200")
+
+    minimum = Button(order_stat_win, text="Minimum", 
+            command=lambda: order_stat("min"))
+    minimum.place(x=100, y=100, anchor="center")
+
+    maximum = Button(order_stat_win, text="Maximum", 
+            command=lambda: order_stat("max"))
+    maximum.place(x=200, y=100, anchor="center")
+
+    median = Button(order_stat_win, text="Median", 
+            command=lambda: order_stat("med"))
+    median.place(x=300, y=100, anchor="center")
+
 # Add and configure buttons
 def configure_buttons():
 
@@ -494,6 +522,9 @@ def configure_buttons():
 
     convolution_btn = Button(f, text="Convolution", command=convolution_handler)
     convolution_btn.place(x=100, y=700, anchor="center")
+
+    order_stat_btn = Button(f, text="Order Statistic", command=order_stat_handler)
+    order_stat_btn.place(x=100, y=800, anchor="center")
 
     #... all other buttons
 

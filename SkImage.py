@@ -528,3 +528,96 @@ class SkImage:
 
         # Update some of skImage object
         self.np_arr = output
+
+
+    
+    def order_filter(self, mode):
+
+        new_arr = np.copy(self.np_arr)
+
+        if mode == "min":
+            for y in range(3//2, self.np_arr.shape[0]-3//2-1):
+                for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+                    window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+                    r = float(window[0, 0, 0])
+                    g = float(window[0, 0, 1])
+                    b = float(window[0, 0, 2])
+                    min_val = (r + g + b)/3
+                    min_pix = window[0, 0]
+
+                    # Through Window
+                    for i in range(window.shape[0]):
+                        for j in range(window.shape[1]):
+                            r = float(window[i, j, 0])
+                            g = float(window[i, j, 1])
+                            b = float(window[i, j, 2])
+
+                            # Calculate Average of RGB
+                            if (r + g + b)/3 < min_val:
+                                min_val = (r + g + b)/3
+                                min_pix = window[i, j]
+
+                    # Update value
+                    new_arr[y, x] = min_pix
+
+        elif mode == "max":
+            for y in range(3//2, self.np_arr.shape[0]-3//2-1):
+                for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+                    window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+                    r = float(window[0, 0, 0])
+                    g = float(window[0, 0, 1])
+                    b = float(window[0, 0, 2])
+                    max_val = (r + g + b)/3
+                    max_pix = window[0, 0]
+
+                    # Through Window
+                    for i in range(window.shape[0]):
+                        for j in range(window.shape[1]):
+                            r = float(window[i, j, 0])
+                            g = float(window[i, j, 1])
+                            b = float(window[i, j, 2])
+
+                            # Calculate Average of RGB
+                            if (r + g + b)/3 > max_val:
+                                max_val = (r + g + b)/3
+                                max_pix = window[i, j]
+
+                    # Update value
+                    new_arr[y, x] = max_pix
+        
+        elif mode == "med":
+            vals = []
+            for y in range(3//2, self.np_arr.shape[0]-3//2-1):
+                for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+                    window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+                    # Through Window
+                    for i in range(window.shape[0]):
+                        for j in range(window.shape[1]):
+                            r = float(window[i, j, 0])
+                            g = float(window[i, j, 1])
+                            b = float(window[i, j, 2])
+
+                            vals.append((r + g + b)/3)
+
+                    vals.sort()
+                    print(vals[4])
+                    return
+                    # is_break = False
+                    # for i in range(window.shape[0]):
+                    #     if is_break:
+                    #         break
+                    #     for j in range(window.shape[1]):
+                    #         r = float(window[i, j, 0])
+                    #         g = float(window[i, j, 1])
+                    #         b = float(window[i, j, 2])
+                    #         if (r + g + b)/3 == vals[4]:
+                    #             # Update value
+                    #             new_arr[y, x] = window[i, j]
+                    #             is_break = True
+                    #             break
+                
+        # Update skImage object
+        self.np_arr = new_arr
+        self.img = PIL.Image.fromarray(new_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr

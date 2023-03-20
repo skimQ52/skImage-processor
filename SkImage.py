@@ -434,27 +434,62 @@ class SkImage:
         plt.show()
         
 
+    # -------------------- CONVOLUTION -------------------------
+
     def convolution(self, kernel, border):
 
-        # if np.linalg.matrix_rank(kernel) == 1: # Separable kernel
-        #     self.convolve(h1)
-        #     self.convolve(h2)
-        # else:
-        #     # Convolution of entire kernel
-        self.convolve(kernel, border)
+        if kernel.shape[0] == kernel.shape[1] and np.linalg.matrix_rank(kernel) == 1: # Separable kernel
+            print("Convolving with a seperable kernel")
+            U, S, V = np.linalg.svd(kernel)
+            h1 = U[:,0] * np.sqrt(S[0])
+            h1 = h1*-1
+            h1 = np.reshape(h1, (1, kernel.shape[0]))
+            h2 = V[0] * np.sqrt(S[0])
+            h2 = h2*-1
+            h2 = np.reshape(h2, (kernel.shape[1], 1))
+            self.convolve(h1, border)
+            self.convolve(h2, border)
+        else:
+            # Convolution of entire kernel
+            print("Convolving")
+            self.convolve(kernel, border)
+        
+        output = self.np_arr
+        
+        if kernel.max() > 1 and kernel.sum() <= 1:
+            output = np.clip(output, 0, 255)
+        else:
+            # Get min and max values of rgb
+            min_r = output[..., 0].min()
+            min_g = output[..., 1].min()
+            min_b = output[..., 2].min()
+            max_r = output[..., 0].max()
+            max_g = output[..., 1].max()
+            max_b = output[..., 2].max()
+
+            # Normalize to visible output (0-255)
+            if max_r > 255 or max_g > 255 or max_b > 255:
+                output[:, :, 0] = (output[:, :, 0] - min_r) * (255) / (max_r - min_r)
+                output[:, :, 1] = (output[:, :, 1] - min_g) * (255) / (max_g - min_g)
+                output[:, :, 2] = (output[:, :, 2] - min_b) * (255) / (max_b - min_b)
+        
+        # Update rest of skImage object
+        self.np_arr = output.astype(np.uint8)
+        self.img = PIL.Image.fromarray(output.astype(np.uint8))
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
 
 
     def convolve(self, h, border):
 
         # h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
-
+        print(h)
         k_height, k_width = h.shape[0], h.shape[1]
 
         # np array to hold output of convolution (NOT NORMALIZED)
         output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], 3))
 
-
-        # Truncate border
+        # Border Handling
         if border == "truncate":
             for y in range(k_height//2, self.np_arr.shape[0]-k_height//2-1):
                 for x in range(k_width//2, self.np_arr.shape[1]-k_width//2-1):
@@ -466,15 +501,12 @@ class SkImage:
                     output[y, x, 1] = int((window[:, :, 1] * h).sum())
                     output[y, x, 2] = int((window[:, :, 2] * h).sum())
 
-
-
         else: # Zero Padding for border handling
             # Border handling
             k = max(h.shape[0], h.shape[1])
             padding = (k - 1)
             offset = padding // 2
 
-            # Add zero padding to the image
             image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, 3))
             image_padded[offset:-offset, offset:-offset] = self.np_arr
 
@@ -485,46 +517,14 @@ class SkImage:
                     output[y, x, 1] = (h * image_padded[y: y+k, x: x+k, 1]).sum()
                     output[y, x, 2] = (h * image_padded[y: y+k, x: x+k, 2]).sum()
 
+                # Manual
                 # for v in range(h.shape[0]):
                 #     for u in range(h.shape[1]):
                 #         output[y, x, 0] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 0]
                 #         output[y, x, 1] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 1]
                 #         output[y, x, 2] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 2]
 
-
-        # Get min and max values of rgb
-        # min_r = output[..., 0].min()
-        # min_g = output[..., 1].min()
-        # min_b = output[..., 2].min()
-        # max_r = output[..., 0].max()
-        # max_g = output[..., 1].max()
-        # max_b = output[..., 2].max()
-
-        # print(max_r)
-        # print(max_g)
-        # print(max_b)
-
-        # Normalize to visible output (0-255)
-        # if max_r > 255 or max_g > 255 or max_b > 255:
-            # output[:, :, 0] = (output[:, :, 0] - min_r) * (255) / (max_r - min_r)
-            # output[:, :, 1] = (output[:, :, 1] - min_g) * (255) / (max_g - min_g)
-            # output[:, :, 2] = (output[:, :, 2] - min_b) * (255) / (max_b - min_b)
-
-
-        #     new_arr = np.ones_like(self.np_arr) # Final np array for convolution
-        #     for y in range(output.shape[0]): # Through output array
-        #         for x in range(output.shape[1]):
-        #             new_r = (output[y,x,0] - min_r) * (255) / (max_r - min_r)
-        #             new_g = (output[y,x,1] - min_g) * (255) / (max_g - min_g)
-        #             new_b = (output[y,x,2] - min_b) * (255) / (max_b - min_b)
-        #             new_arr[y,x] = int(new_r), int(new_g), int(new_b)
-
-
-        new_arr = np.clip(output, 0, 255)
+        # new_arr = output.astype(np.uint8)
 
         # Update some of skImage object
-        self.np_arr = new_arr.astype(np.uint8)
-        self.img = PIL.Image.fromarray(new_arr.astype(np.uint8))
-        # Update rest of skImage object
-        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
-        self.non_rotated = self.np_arr
+        self.np_arr = output

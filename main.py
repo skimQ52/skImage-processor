@@ -350,14 +350,10 @@ def convolution(values, mode):
         for j in range(len(values[i])):
             kernel[i][j] = float(Fraction(values[i][j].get()))
 
-    print(kernel) # For testing
-    skIm.convolve(kernel, mode.get())
+    skIm.convolution(kernel, mode.get())
     update_image()
 
-def convolve_handler(kernel, mode, preset):
-
-    m = int(kernel.shape[1])
-    n = int(kernel.shape[0])
+def convolve_handler(kernel, mode, preset, m, n):
 
     convolve_win = Toplevel(window)
     convolve_win.title("Convolution")
@@ -392,17 +388,26 @@ def convolve_preset(preset, mode):
 
     kernel = np.empty(0) # kernel starts at nothing
 
+    # PRESETS
     if preset == "mean":
         kernel = np.array([["1/9", "1/9", "1/9"], ["1/9", "1/9", "1/9"], ["1/9", "1/9", "1/9"]])
     elif preset == "sharpen":
         kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     elif preset == "laplacian":
         kernel = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
+    elif preset == "gaussian":
+        kernel = np.array([["1/16", "1/8", "1/16"], ["1/8", "1/4", "1/8"], ["1/16", "1/8", "1/16"]])
+    elif preset == "gaussian5":
+        kernel = np.array([["1/256", "4/256", "6/256", "4/256", "1/256"], 
+                           ["4/256", "16/256", "24/256", "16/256", "4/256"], 
+                           ["6/256", "24/256", "36/256", "24/256", "6/256"],
+                           ["4/256", "16/256", "24/256", "16/256", "4/256"], 
+                           ["1/256", "4/256", "6/256", "4/256", "1/256"]])
     else:
         kernel = np.zeros((3, 3)) # failsafe, zeros
 
     # Call convolve function to create kernel visible for user with preset filled in  
-    convolve_handler(kernel, mode, True)
+    convolve_handler(kernel, mode, True, kernel.shape[0], kernel.shape[1])
     
 def convolution_handler():
     convolution_win = Toplevel(window)
@@ -425,28 +430,36 @@ def convolution_handler():
     border_cb.place(x=200, y=150, anchor="center")
     border_cb['values'] = ('truncate', 'zero')
     border_cb['state'] = 'readonly'
-    border_cb.current(0) # default to truncate
+    border_cb.current(1) # default to zero
 
     kernel = np.empty((int(height_entry.get()), int(width_entry.get()))) # Empty kernel for custom convolutions
     custom_btn = Button(convolution_win, text="Custom", 
-            command=lambda: convolve_handler(kernel, border_cb, preset=False))
+            command=lambda: convolve_handler(kernel, border_cb, preset=False, m=int(height_entry.get()), n=int(width_entry.get())))
     custom_btn.place(x=25, y=70, anchor="w")
 
     # Presets
     presets_lbl = Label(convolution_win, text="Presets", underline="7")
-    presets_lbl.place(x=300, y=40, anchor="center")
+    presets_lbl.place(x=320, y=10, anchor="center")
 
     mean = Button(convolution_win, text="Mean", 
             command=lambda: convolve_preset("mean", border_cb))
-    mean.place(x=300, y=60, anchor="center")
+    mean.place(x=320, y=30, anchor="center")
 
     sharpen = Button(convolution_win, text="Sharpen", 
             command=lambda: convolve_preset("sharpen", border_cb))
-    sharpen.place(x=300, y=90, anchor="center")
+    sharpen.place(x=320, y=60, anchor="center")
 
     laplacian = Button(convolution_win, text="Laplacian", 
             command=lambda: convolve_preset("laplacian", border_cb))
-    laplacian.place(x=300, y=120, anchor="center")
+    laplacian.place(x=320, y=90, anchor="center")
+
+    gaussian = Button(convolution_win, text="Gaussian", 
+            command=lambda: convolve_preset("gaussian", border_cb))
+    gaussian.place(x=320, y=120, anchor="center")
+
+    gaussian5 = Button(convolution_win, text="Gaussian5x5", 
+            command=lambda: convolve_preset("gaussian5", border_cb))
+    gaussian5.place(x=320, y=150, anchor="center")
 
 
 # Add and configure buttons

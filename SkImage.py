@@ -502,7 +502,6 @@ class SkImage:
                     output[y, x, 2] = int((window[:, :, 2] * h).sum())
 
         else: # Zero Padding for border handling
-            # Border handling
             k = max(h.shape[0], h.shape[1])
             padding = (k - 1)
             offset = padding // 2
@@ -517,20 +516,12 @@ class SkImage:
                     output[y, x, 1] = (h * image_padded[y: y+k, x: x+k, 1]).sum()
                     output[y, x, 2] = (h * image_padded[y: y+k, x: x+k, 2]).sum()
 
-                # Manual
-                # for v in range(h.shape[0]):
-                #     for u in range(h.shape[1]):
-                #         output[y, x, 0] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 0]
-                #         output[y, x, 1] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 1]
-                #         output[y, x, 2] += h[v, u] * image_padded[int(y+v-((h.shape[0]-1)/2)), int(x+u-((h.shape[1]-1)/2)), 2]
-
-        # new_arr = output.astype(np.uint8)
-
         # Update some of skImage object
         self.np_arr = output
 
 
-    
+# -------------------- ORDER STATISTIC FILTERING -------------------------
+
     def order_filter(self, mode):
 
         new_arr = np.copy(self.np_arr)
@@ -586,35 +577,33 @@ class SkImage:
                     new_arr[y, x] = max_pix
         
         elif mode == "med":
-            vals = []
             for y in range(3//2, self.np_arr.shape[0]-3//2-1):
                 for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+                    vals = []
                     window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+
                     # Through Window
                     for i in range(window.shape[0]):
                         for j in range(window.shape[1]):
                             r = float(window[i, j, 0])
                             g = float(window[i, j, 1])
                             b = float(window[i, j, 2])
-
-                            vals.append((r + g + b)/3)
+                            vals.append((r+g+b)/3) # Append average
 
                     vals.sort()
-                    print(vals[4])
-                    return
-                    # is_break = False
-                    # for i in range(window.shape[0]):
-                    #     if is_break:
-                    #         break
-                    #     for j in range(window.shape[1]):
-                    #         r = float(window[i, j, 0])
-                    #         g = float(window[i, j, 1])
-                    #         b = float(window[i, j, 2])
-                    #         if (r + g + b)/3 == vals[4]:
-                    #             # Update value
-                    #             new_arr[y, x] = window[i, j]
-                    #             is_break = True
-                    #             break
+                    is_break = False
+                    for i in range(window.shape[0]):
+                        if is_break:
+                            break
+                        for j in range(window.shape[1]):
+                            r = float(window[i, j, 0])
+                            g = float(window[i, j, 1])
+                            b = float(window[i, j, 2])
+                            if (r + g + b)/3 == vals[4]:
+                                # Update value
+                                new_arr[y, x] = window[i, j]
+                                is_break = True
+                                break
                 
         # Update skImage object
         self.np_arr = new_arr

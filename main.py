@@ -54,6 +54,25 @@ def reset_image():
     update_image()
 
 
+# SAVING IMAGES
+def save_image():
+    skIm.img.save(skIm.path)
+    skIm.img_origin = skIm.img
+
+def save_as_image():
+    filetypes = (
+        ('JPG Images', '*.jpg'),
+        ('JPEG Images', '*.jpeg'),
+        ('PNG Images', '*.png'),
+        ('All files', '*.*')
+    )
+    file = filedialog.asksaveasfile(mode="w", defaultextension=".png", filetypes=filetypes)
+    if file:
+        skIm.img.save(file)
+    skIm.img_origin = skIm.img
+    skIm.path = file.name
+
+
 # REFLECTING
 def reflect(means):
     skIm.reflect(means)
@@ -496,6 +515,12 @@ def configure_buttons():
     reset_btn = Button(f, text="Reset", command=reset_image)
     reset_btn.place(x=1300, y=150, anchor="center")
 
+    save_btn = Button(f, text="Save", command=save_image)
+    save_btn.place(x=1400, y=150, anchor="center")
+
+    save_as_btn = Button(f, text="Save As", command=save_as_image)
+    save_as_btn.place(x=1500, y=150, anchor="center")
+
     reflect_btn = Button(f, text="Reflect", command=reflect_handler)
     reflect_btn.place(x=100, y=150, anchor="center")
 
@@ -539,35 +564,36 @@ def update_image():
     f.update()
 
 
-# sk Image Class Object
-skIm = SkImage()
+if __name__ == "__main__":
+    # sk Image Class Object
+    skIm = SkImage()
 
-#Main Window
-window = Tk()
-window.title("skImage Processor")
-window.geometry('1920x1080')
+    #Main Window
+    window = Tk()
+    window.title("skImage Processor")
+    window.geometry('1920x1080')
 
-# Main Frame
-f = Frame(window, bg="gray", width=1920, height=1080)
-f.grid(row=0,column=0,sticky="NW")
+    # Main Frame
+    f = Frame(window, bg="gray", width=1920, height=1080)
+    f.grid(row=0,column=0,sticky="NW")
 
-# Title label
-l = Label(f, text="Welcome to the skImage Processor", bg="white",  font=("Arial Bold", 50))
-l.place(x=960, y=75, anchor="center")
+    # Title label
+    l = Label(f, text="Welcome to the skImage Processor", bg="white",  font=("Arial Bold", 50))
+    l.place(x=960, y=75, anchor="center")
 
-# Upload Button
-upload_btn = Button(f, text="Upload Image", command=upload)
-upload_btn.place(x=1200, y=150, anchor="center")
+    # Upload Button
+    upload_btn = Button(f, text="Upload Image", command=upload)
+    upload_btn.place(x=1200, y=150, anchor="center")
 
-# IMAGE FRAME
-im_frame = Frame(f, width=600, height=400, bg="white")
-im_frame.pack(pady=20,padx=20)
-im_frame.place(anchor='center', relx=0.5, rely=0.5)
-f.update()
+    # IMAGE FRAME
+    im_frame = Frame(f, width=600, height=400, bg="white")
+    im_frame.pack(pady=20,padx=20)
+    im_frame.place(anchor='center', relx=0.5, rely=0.5)
+    f.update()
 
-# Create a Label Widget to display the Image
-im_label = Label(im_frame, bg="white")
-im_label.pack()
+    # Create a Label Widget to display the Image
+    im_label = Label(im_frame, bg="white")
+    im_label.pack()
 
-# Mainloop for window/program
-window.mainloop()
+    # Mainloop for window/program
+    window.mainloop()

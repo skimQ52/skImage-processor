@@ -509,6 +509,37 @@ def order_stat_handler():
             command=lambda: order_stat("med"))
     median.place(x=300, y=100, anchor="center")
 
+
+# ADDING NOISE
+def noise(mode):
+    skIm.noise(mode)
+    update_image()
+
+def noise_handler():
+    noise_win = Toplevel(window)
+    noise_win.title("Add Noise")
+    noise_win.geometry("200x200")
+
+    salt = Button(noise_win, text="Salt", 
+            command=lambda: noise("salt"))
+    salt.place(x=100, y=30, anchor="center")
+
+    pepper = Button(noise_win, text="Pepper", 
+            command=lambda: noise("pepper"))
+    pepper.place(x=100, y=60, anchor="center")
+
+    red = Button(noise_win, text="Red", 
+            command=lambda: noise("r"))
+    red.place(x=100, y=90, anchor="center")
+
+    green = Button(noise_win, text="Green", 
+            command=lambda: noise("g"))
+    green.place(x=100, y=120, anchor="center")
+
+    blue = Button(noise_win, text="Blue", 
+            command=lambda: noise("b"))
+    blue.place(x=100, y=150, anchor="center")
+
 # Add and configure buttons
 def configure_buttons():
 
@@ -550,6 +581,9 @@ def configure_buttons():
 
     order_stat_btn = Button(f, text="Order Statistic", command=order_stat_handler)
     order_stat_btn.place(x=100, y=800, anchor="center")
+
+    noise_btn = Button(f, text="Add Noise", command=noise_handler)
+    noise_btn.place(x=100, y=850, anchor="center")
 
     #... all other buttons
 

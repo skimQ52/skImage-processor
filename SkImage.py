@@ -3,6 +3,7 @@ import PIL.ImageTk
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import random
 
 from skimage import exposure
 
@@ -605,6 +606,35 @@ class SkImage:
                                 is_break = True
                                 break
                 
+        # Update skImage object
+        self.np_arr = new_arr
+        self.img = PIL.Image.fromarray(new_arr)
+        self.tk_img = PIL.ImageTk.PhotoImage(self.img)
+        self.non_rotated = self.np_arr
+
+
+    # ------------------ ADDING NOISE ---------------------
+
+    def noise(self, mode):
+        new_arr = np.copy(self.np_arr)
+        rgb = (0, 0, 0)
+        if mode == "salt":
+            rgb = (255, 255, 255)
+        elif mode == "pepper":
+            rgb = (0, 0, 0)
+        elif mode == "r":
+            rgb = (255, 0, 0)
+        elif mode == "g":
+            rgb = (0, 255, 0)
+        elif mode == "b":
+            rgb = (0, 0, 255)
+        
+        for i in range(self.np_arr.shape[0]):
+            for j in range(self.np_arr.shape[1]):
+                v = random.randint(0, 100)
+                if v > 97:
+                    new_arr[i, j] = rgb
+
         # Update skImage object
         self.np_arr = new_arr
         self.img = PIL.Image.fromarray(new_arr)

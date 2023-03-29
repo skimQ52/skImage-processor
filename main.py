@@ -25,6 +25,12 @@ def upload():
         title='Select an image',
         filetypes=filetypes)
 
+    if not filename:
+        return
+    
+    if l.winfo_exists():
+        l.destroy()
+
     # Set SkImage class attributes
     skIm.path = filename
     skIm.tk_img = PIL.ImageTk.PhotoImage(PIL.Image.open(filename))
@@ -69,8 +75,8 @@ def save_as_image():
     file = filedialog.asksaveasfile(mode="w", defaultextension=".png", filetypes=filetypes)
     if file:
         skIm.img.save(file)
-    skIm.img_origin = skIm.img
-    skIm.path = file.name
+        skIm.img_origin = skIm.img
+        skIm.path = file.name
 
 
 # REFLECTING
@@ -543,47 +549,47 @@ def noise_handler():
 # Add and configure buttons
 def configure_buttons():
 
-    reset_btn = Button(f, text="Reset", command=reset_image)
-    reset_btn.place(x=1300, y=150, anchor="center")
+    reset_btn = Button(right, text="Reset", command=reset_image)
+    reset_btn.place(relx=0.5, y=200, anchor="center")
 
-    save_btn = Button(f, text="Save", command=save_image)
-    save_btn.place(x=1400, y=150, anchor="center")
+    save_btn = Button(right, text="Save", command=save_image)
+    save_btn.place(relx=0.5, y=300, anchor="center")
 
-    save_as_btn = Button(f, text="Save As", command=save_as_image)
-    save_as_btn.place(x=1500, y=150, anchor="center")
+    save_as_btn = Button(right, text="Save As", command=save_as_image)
+    save_as_btn.place(relx=0.5, y=350, anchor="center")
 
-    reflect_btn = Button(f, text="Reflect", command=reflect_handler)
-    reflect_btn.place(x=100, y=150, anchor="center")
+    reflect_btn = Button(left, text="Reflect", command=reflect_handler)
+    reflect_btn.place(relx=0.5, y=150, anchor="center")
 
-    scale_btn = Button(f, text="Scale", command=scale_handler)
-    scale_btn.place(x=100, y=200, anchor="center")
+    scale_btn = Button(left, text="Scale", command=scale_handler)
+    scale_btn.place(relx=0.5, y=200, anchor="center")
 
-    rotate_btn = Button(f, text="Rotate", command=rotate_handler)
-    rotate_btn.place(x=100, y=250, anchor="center")
+    rotate_btn = Button(left, text="Rotate", command=rotate_handler)
+    rotate_btn.place(relx=0.5, y=250, anchor="center")
 
-    crop_btn = Button(f, text="Crop", command=crop_handler)
-    crop_btn.place(x=100, y=300, anchor="center")
+    crop_btn = Button(left, text="Crop", command=crop_handler)
+    crop_btn.place(relx=0.5, y=300, anchor="center")
 
-    brightness_btn = Button(f, text="Brightness", command=bright_handler)
-    brightness_btn.place(x=100, y=400, anchor="center")
+    brightness_btn = Button(left, text="Brightness", command=bright_handler)
+    brightness_btn.place(relx=0.5, y=400, anchor="center")
 
-    contrast_btn = Button(f, text="Contrast", command=contrast_handler)
-    contrast_btn.place(x=100, y=450, anchor="center")
+    contrast_btn = Button(left, text="Contrast", command=contrast_handler)
+    contrast_btn.place(relx=0.5, y=450, anchor="center")
 
-    gamma_btn = Button(f, text="Gamma", command=gamma_handler)
-    gamma_btn.place(x=100, y=500, anchor="center")
+    gamma_btn = Button(left, text="Gamma", command=gamma_handler)
+    gamma_btn.place(relx=0.5, y=500, anchor="center")
 
-    histogram_btn = Button(f, text="Histogram", command=histogram_handler)
-    histogram_btn.place(x=100, y=600, anchor="center")
+    histogram_btn = Button(left, text="Histogram", command=histogram_handler)
+    histogram_btn.place(relx=0.5, y=600, anchor="center")
 
-    convolution_btn = Button(f, text="Convolution", command=convolution_handler)
-    convolution_btn.place(x=100, y=700, anchor="center")
+    convolution_btn = Button(left, text="Convolution", command=convolution_handler)
+    convolution_btn.place(relx=0.5, y=700, anchor="center")
 
-    order_stat_btn = Button(f, text="Order Statistic", command=order_stat_handler)
-    order_stat_btn.place(x=100, y=800, anchor="center")
+    order_stat_btn = Button(left, text="Order Statistic", command=order_stat_handler)
+    order_stat_btn.place(relx=0.5, y=800, anchor="center")
 
-    noise_btn = Button(f, text="Add Noise", command=noise_handler)
-    noise_btn.place(x=100, y=850, anchor="center")
+    noise_btn = Button(left, text="Add Noise", command=noise_handler)
+    noise_btn.place(relx=0.5, y=850, anchor="center")
 
     #... all other buttons
 
@@ -608,26 +614,30 @@ if __name__ == "__main__":
     window.geometry('1920x1080')
 
     # Main Frame
-    f = Frame(window, bg="gray", width=1920, height=1080)
+    f = Frame(window, bg="#001440", width=1920, height=1080)
     f.grid(row=0,column=0,sticky="NW")
 
-    # Title label
-    l = Label(f, text="Welcome to the skImage Processor", bg="white",  font=("Arial Bold", 50))
-    l.place(x=960, y=75, anchor="center")
-
-    # Upload Button
-    upload_btn = Button(f, text="Upload Image", command=upload)
-    upload_btn.place(x=1200, y=150, anchor="center")
-
     # IMAGE FRAME
-    im_frame = Frame(f, width=600, height=400, bg="white")
-    im_frame.pack(pady=20,padx=20)
+    im_frame = Frame(f)
     im_frame.place(anchor='center', relx=0.5, rely=0.5)
     f.update()
 
     # Create a Label Widget to display the Image
-    im_label = Label(im_frame, bg="white")
+    im_label = Label(im_frame)
     im_label.pack()
+
+    # Title label
+    l = Label(f, text="Upload an image to get started", bg="#001440", fg="#DBE2E9", font=("Arial Bold", 50))
+    l.place(relx=0.5, rely=0.3, anchor="center")
+
+    left = Frame(f, bg='black', width=250, height=1080)
+    left.place(anchor='nw', relx=0, rely=0)
+    right = Frame(f, bg='black', width=250, height=1080)
+    right.place(anchor='e', relx=1, rely=0.5)
+
+    # Upload Button
+    upload_btn = Button(right, text="Upload Image", command=upload)
+    upload_btn.place(relx=0.5, y=150, anchor="center")
 
     # Mainloop for window/program
     window.mainloop()

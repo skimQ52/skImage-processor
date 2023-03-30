@@ -190,7 +190,7 @@ class SkImage:
                         # Applying shear Transformation                     
                         new_y, new_x = self.shear_at_point(angle,x,y)
 
-                    else:
+                    else: # nearest neighbour
                         # co-ordinate of pixel with respect to the rotated image, Nearest Neighbour? moght be needed for both
                         new_y = round(-x * sine + y * cosine)
                         new_x = round(x * cosine + y * sine)
@@ -237,8 +237,10 @@ class SkImage:
         # Create new image with proper (reduced) size
         new_arr = np.empty([self.np_arr.shape[0] - (top+bottom), self.np_arr.shape[1] - (left+right), 3], dtype=np.uint8)
 
-        for i in range(top, (self.np_arr.shape[0] - bottom)): # Shift starting index according to amount of pixels to remove from top, until amount to remove from bot
-            for j in range(left, (self.np_arr.shape[1] - right)): # Shift starting index according to amount of pixels to remove from left, until amount to remove from right
+        for i in range(top, (self.np_arr.shape[0] - bottom)):
+            # Shift starting index according to amount of pixels to remove from top, until amount to remove from bottom
+            for j in range(left, (self.np_arr.shape[1] - right)):
+                # Shift starting index according to amount of pixels to remove from left, until amount to remove from right
                 new_arr[i-top][j-left] = self.np_arr[i][j]
 
         # Update skImage object
@@ -270,6 +272,7 @@ class SkImage:
                 if b > 255: b = 255
                 elif b < 0: b = 0
 
+                # Update new value
                 self.np_arr[i][j] = r, g, b
 
         # Update skImage object
@@ -302,6 +305,7 @@ class SkImage:
                 if b > 255: b = 255
                 elif b < 0: b = 0
 
+                # Update new value
                 self.np_arr[i][j] = r, g, b
         
         # Update skImage object
@@ -332,6 +336,7 @@ class SkImage:
                 if b > 255: b = 255
                 elif b < 0: b = 0
 
+                # Update new value
                 self.np_arr[i][j] = r, g, b
         
         # Update skImage object
@@ -362,7 +367,7 @@ class SkImage:
         map_g = np.floor(255 * counts_g).astype(np.uint8)
         map_b = np.floor(255 * counts_b).astype(np.uint8)
 
-        # Equalize by transforming pixels by using List Comprehension
+        # Equalize by transforming pixels by using list comprehension
         equ_r = [map_r[i] for i in self.np_arr[:, :, 0].flatten()]
         equ_g = [map_g[i] for i in self.np_arr[:, :, 1].flatten()]
         equ_b = [map_b[i] for i in self.np_arr[:, :, 2].flatten()]
@@ -404,7 +409,7 @@ class SkImage:
                 title = "Culmulative " + title # Prepend to title
 
             if normalized:
-                plt.ylim([0, 1]) # Normalized maps to [0, 1]  # TODO Should i have this or not
+                plt.ylim([0, 1]) # Normalized maps to [0, 1]
                 title = "Normalized " + title # Prepend to title
 
             plt.title(title)
@@ -412,6 +417,8 @@ class SkImage:
 
         else: # Gray level img
             title = "Histogram for grayscale image"
+
+            # Treat the image array as a grayscale (1 channel)
             counts, bins = np.histogram(self.np_arr.ravel(), 256, [0, 256])
             counts = counts / 3 # divide since it is graylevel not rgb
 
@@ -421,7 +428,7 @@ class SkImage:
 
             if normalized:
                 counts = counts / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
-                plt.ylim([0, 1]) # Normalized maps to [0, 1]   # TODO Should i have this or not
+                plt.ylim([0, 1]) # Normalized maps to [0, 1]
                 title = "Normalized " + title # Prepend to title
 
             # Add to plot and set title
@@ -429,7 +436,7 @@ class SkImage:
             plt.title(title)
 
 
-        plt.xlim([0, 256]) # L = 256
+        plt.xlim([0, 256]) # L = 256 limit
         plt.xlabel("value")
         plt.ylabel("pixel count")
         plt.show()
@@ -457,6 +464,7 @@ class SkImage:
         
         output = self.np_arr
         
+        # Normalize convoultion(s) output to be within 0 and 255 to be properly visible
         if kernel.max() > 1 and kernel.sum() <= 1:
             output = np.clip(output, 0, 255)
         else:
@@ -483,7 +491,6 @@ class SkImage:
 
     def convolve(self, h, border):
 
-        # h = np.flipud(np.fliplr(h))  # Flip kernel TODO: Do i need this??
         print(h)
         k_height, k_width = h.shape[0], h.shape[1]
 
@@ -491,13 +498,14 @@ class SkImage:
         output = np.zeros((self.np_arr.shape[0], self.np_arr.shape[1], 3))
 
         # Border Handling
-        if border == "truncate":
+        if border == "truncate": # Truncate border for convolution
             for y in range(k_height//2, self.np_arr.shape[0]-k_height//2-1):
                 for x in range(k_width//2, self.np_arr.shape[1]-k_width//2-1):
 
-                    # Perform the convolution on each rgb
+                    # Define a window around (x, y)
                     window = self.np_arr[y-k_height//2 : y+k_height//2+1, x-k_width//2 : x+k_width//2+1]
 
+                    # Perform the convolution on each rgb
                     output[y, x, 0] = int((window[:, :, 0] * h).sum())
                     output[y, x, 1] = int((window[:, :, 1] * h).sum())
                     output[y, x, 2] = int((window[:, :, 2] * h).sum())
@@ -507,12 +515,14 @@ class SkImage:
             padding = (k - 1)
             offset = padding // 2
 
+            # Create a zero padded version of the image
             image_padded = np.zeros((self.np_arr.shape[0] + padding, self.np_arr.shape[1] + padding, 3))
             image_padded[offset:-offset, offset:-offset] = self.np_arr
 
             for y in range(self.np_arr.shape[0]):
                 for x in range(self.np_arr.shape[1]):
-
+                    
+                    # Perform the convolution on each rgb
                     output[y, x, 0] = (h * image_padded[y: y+k, x: x+k, 0]).sum()
                     output[y, x, 1] = (h * image_padded[y: y+k, x: x+k, 1]).sum()
                     output[y, x, 2] = (h * image_padded[y: y+k, x: x+k, 2]).sum()
@@ -528,12 +538,19 @@ class SkImage:
         new_arr = np.copy(self.np_arr)
 
         if mode == "min":
+            # Take min value of nearby neighbourhood
             for y in range(3//2, self.np_arr.shape[0]-3//2-1):
                 for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+
+                    # Define window around (x, y)
                     window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+
+                    # Get RGB of first pixel in window
                     r = float(window[0, 0, 0])
                     g = float(window[0, 0, 1])
                     b = float(window[0, 0, 2])
+
+                    # Min value and pixel (initially)
                     min_val = (r + g + b)/3
                     min_pix = window[0, 0]
 
@@ -553,18 +570,26 @@ class SkImage:
                     new_arr[y, x] = min_pix
 
         elif mode == "max":
+            # Take max value of nearby neighbourhood
             for y in range(3//2, self.np_arr.shape[0]-3//2-1):
                 for x in range(3//2, self.np_arr.shape[1]-3//2-1):
+
+                    # Define window arround (x, y)
                     window = self.np_arr[y-3//2 : y+3//2+1, x-3//2 : x+3//2+1]
+
+                    # Get RGB of first pixel in window
                     r = float(window[0, 0, 0])
                     g = float(window[0, 0, 1])
                     b = float(window[0, 0, 2])
+
+                    # Max value and pixel (initially)
                     max_val = (r + g + b)/3
                     max_pix = window[0, 0]
 
                     # Through Window
                     for i in range(window.shape[0]):
                         for j in range(window.shape[1]):
+                            # Get RGB
                             r = float(window[i, j, 0])
                             g = float(window[i, j, 1])
                             b = float(window[i, j, 2])
@@ -578,6 +603,7 @@ class SkImage:
                     new_arr[y, x] = max_pix
         
         elif mode == "med":
+            # Take med value of nearby neighbourhood
             for y in range(3//2, self.np_arr.shape[0]-3//2-1):
                 for x in range(3//2, self.np_arr.shape[1]-3//2-1):
                     vals = []
@@ -586,21 +612,25 @@ class SkImage:
                     # Through Window
                     for i in range(window.shape[0]):
                         for j in range(window.shape[1]):
+                            # Get RGB
                             r = float(window[i, j, 0])
                             g = float(window[i, j, 1])
                             b = float(window[i, j, 2])
                             vals.append((r+g+b)/3) # Append average
 
-                    vals.sort()
+                    vals.sort() # Median pixel is now vals[4] (the middle)
+
+                    # Find median pixel
                     is_break = False
                     for i in range(window.shape[0]):
                         if is_break:
                             break
                         for j in range(window.shape[1]):
+                            # Get RGB
                             r = float(window[i, j, 0])
                             g = float(window[i, j, 1])
                             b = float(window[i, j, 2])
-                            if (r + g + b)/3 == vals[4]:
+                            if (r + g + b)/3 == vals[4]: # If mean
                                 # Update value
                                 new_arr[y, x] = window[i, j]
                                 is_break = True
@@ -617,6 +647,8 @@ class SkImage:
 
     def noise(self, mode):
         new_arr = np.copy(self.np_arr)
+
+        # Set RGB of noise to add depending on mode
         rgb = (0, 0, 0)
         if mode == "salt":
             rgb = (255, 255, 255)
@@ -629,6 +661,7 @@ class SkImage:
         elif mode == "b":
             rgb = (0, 0, 255)
         
+        # Set 3% of pixels to the set noise
         for i in range(self.np_arr.shape[0]):
             for j in range(self.np_arr.shape[1]):
                 v = random.randint(0, 100)

@@ -87,7 +87,7 @@ class SkImage:
 
 
 
-    # --------------------- OPERATIONAL FUNCTIONS ----------------------
+    # --------------------- GEOMETRICAL TRANSFORMATIONS----------------------
 
     def reflect(self, direction):
 
@@ -95,11 +95,13 @@ class SkImage:
         if (direction == "hor"): # horizontal reflection
             for i in range(self.np_arr.shape[0]): # height
                 for j in range(self.np_arr.shape[1]): # width
+                    # reflect the value (horizontally)
                     new_arr[i][(new_arr.shape[1] - 1) - j] = self.np_arr[i][j]
 
         elif (direction == "ver"): # vertical reflection
             for i in range(self.np_arr.shape[0]): # height
                 for j in range(self.np_arr.shape[1]): # width
+                    # reflect the value (vertically)
                     new_arr[(new_arr.shape[0] - 1) - i][j] = self.np_arr[i][j]
 
         # Update skImage object
@@ -114,12 +116,16 @@ class SkImage:
 
         width_diff = width/self.np_arr.shape[1]
         height_diff = height/self.np_arr.shape[0]
+
+        # Create new array size of scaled image
         new_arr = np.empty([height, width, 3], dtype=np.uint8)
 
         if mode == "nearest":
             for i in range(height-1):
                 for j in range(width-1):
+                    # Find the new values of rgb in the original image according to the differences
                     r, g, b = self.img.getpixel((int(j/width_diff), int(i/height_diff)))
+                    # Set value in new image
                     new_arr[i][j] = r, g, b
 
         else: # Bilinear Interpolation
@@ -133,7 +139,8 @@ class SkImage:
                     # Bilinear interpolation
                     red, green, blue = self.bilinear_interpolate(self.img, x, y)
 
-                    if red >= 0 and green >= 0 and blue >= 0:
+                    if red >= 0 and green >= 0 and blue >= 0: # Error prevention
+                        # Set the new value
                         new_arr[i, j] = red, green, blue
 
         # Update skImage object
@@ -191,7 +198,6 @@ class SkImage:
                         new_y, new_x = self.shear_at_point(angle,x,y)
 
                     else: # nearest neighbour
-                        # co-ordinate of pixel with respect to the rotated image, Nearest Neighbour? moght be needed for both
                         new_y = round(-x * sine + y * cosine)
                         new_x = round(x * cosine + y * sine)
 
@@ -216,6 +222,7 @@ class SkImage:
                     new_y = (-x * sine) + (y * cosine) 
                     new_x = (x * cosine) + (y * sine)
 
+                    # Alter according to the centre of the image
                     new_y = centre_h - new_y
                     new_x = centre_w - new_x
 
@@ -249,6 +256,7 @@ class SkImage:
         self.tk_img = PIL.ImageTk.PhotoImage(self.img)
         self.non_rotated = self.np_arr
                 
+
 
     # ------------------------- Linear Mappings -----------------------------
     
@@ -448,6 +456,8 @@ class SkImage:
 
         if kernel.shape[0] == kernel.shape[1] and np.linalg.matrix_rank(kernel) == 1: # Separable kernel
             print("Convolving with a seperable kernel")
+
+            # Split into seperable kernels
             U, S, V = np.linalg.svd(kernel)
             h1 = U[:,0] * np.sqrt(S[0])
             h1 = h1*-1
@@ -455,6 +465,8 @@ class SkImage:
             h2 = V[0] * np.sqrt(S[0])
             h2 = h2*-1
             h2 = np.reshape(h2, (kernel.shape[1], 1))
+
+            # Convolve h1 and h2
             self.convolve(h1, border)
             self.convolve(h2, border)
         else:

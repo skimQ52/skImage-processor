@@ -5,8 +5,6 @@ import math
 import matplotlib.pyplot as plt
 import random
 
-from skimage import exposure
-
 class SkImage:
 
     def __init__(self):
@@ -206,7 +204,7 @@ class SkImage:
                     new_x = new_centre_w - new_x
 
                     # error prevention before updating new np array
-                    if 0 <= new_x < new_w and 0 <= new_y < new_h and new_x >= 0 and new_y >=0:
+                    if 0 <= new_x < new_w and 0 <= new_y < new_h and new_x >= 0 and new_y >= 0:
                         new_arr[new_y, new_x, :] = self.non_rotated[i, j, :]
 
         # Bilinear Interpolation

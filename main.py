@@ -614,7 +614,7 @@ if __name__ == "__main__":
     window.geometry('1920x1080')
 
     # Main Frame
-    f = Frame(window, bg="#001440", width=1920, height=1080)
+    f = Frame(window, bg="#A9A9A9", width=1920, height=1080)
     f.grid(row=0,column=0,sticky="NW")
 
     # IMAGE FRAME
@@ -627,12 +627,12 @@ if __name__ == "__main__":
     im_label.pack()
 
     # Title label
-    l = Label(f, text="Upload an image to get started", bg="#001440", fg="#DBE2E9", font=("Arial Bold", 50))
+    l = Label(f, text="Upload an image to get started", bg="#A9A9A9", fg="black", font=("Arial Bold", 50))
     l.place(relx=0.5, rely=0.3, anchor="center")
 
-    left = Frame(f, bg='black', width=250, height=1080)
+    left = Frame(f, bg='#949494', width=250, height=1080)
     left.place(anchor='nw', relx=0, rely=0)
-    right = Frame(f, bg='black', width=250, height=1080)
+    right = Frame(f, bg='#949494', width=250, height=1080)
     right.place(anchor='e', relx=1, rely=0.5)
 
     # Upload Button

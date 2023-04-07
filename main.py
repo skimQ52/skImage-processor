@@ -335,16 +335,16 @@ def gamma_handler():
 
 
 # HISTOGRAM
-def histogram(rgb_img, normalized, culmulative):
-    skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get())
+def histogram(rgb_img, normalized, cumulative):
+    skIm.histogram(rgb_img.get(), normalized.get(), cumulative.get())
 
-def histogram_equ(rgb_img, normalized, culmulative):
+def histogram_equ(rgb_img, normalized, cumulative):
     skIm.histogram_equ()
     update_image()
     rgb_img.set(1)
     normalized.set(1)
-    culmulative.set(1)
-    skIm.histogram(rgb_img.get(), normalized.get(), culmulative.get()) # Update / Add histogram
+    cumulative.set(1)
+    skIm.histogram(rgb_img.get(), normalized.get(), cumulative.get()) # Update / Add histogram
 
 def histogram_handler():
     histo_win = Toplevel(window)
@@ -353,7 +353,7 @@ def histogram_handler():
 
     rgb_img = IntVar(histo_win, 0, "rgb_img")
     normalized = IntVar(histo_win, 0, "normalized")
-    culmulative = IntVar(histo_win, 0, "culmulative")
+    cumulative = IntVar(histo_win, 0, "cumulative")
 
     c1 = Checkbutton(histo_win, text='Colour Image', variable=rgb_img)
     c1.place(x=200, y=50, anchor="center")
@@ -361,15 +361,15 @@ def histogram_handler():
     c2 = Checkbutton(histo_win, text='Normalized', variable=normalized)
     c2.place(x=200, y=70, anchor="center")
 
-    c3 = Checkbutton(histo_win, text='Culmulative', variable=culmulative)
+    c3 = Checkbutton(histo_win, text='Cumulative', variable=cumulative)
     c3.place(x=200, y=90, anchor="center")
 
     histo_btn = Button(histo_win, text="Show Histogram",
-            command=lambda: histogram(rgb_img, normalized, culmulative))
+            command=lambda: histogram(rgb_img, normalized, cumulative))
     histo_btn.place(x=200, y=130, anchor="center")
 
     histo_equ_btn = Button(histo_win, text="Histogram Equalization", 
-            command=lambda: histogram_equ(rgb_img, normalized, culmulative))
+            command=lambda: histogram_equ(rgb_img, normalized, cumulative))
     histo_equ_btn.place(x=200, y=170, anchor="center")
 
 

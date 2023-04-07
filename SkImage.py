@@ -239,6 +239,11 @@ class SkImage:
 
 
     def crop(self, left, right, top, bottom):
+
+        # Check for illegal crop values
+        if left+right >= self.np_arr.shape[0] or top+bottom >= self.np_arr.shape[1]:
+            return
+
         # Create new image with proper (reduced) size
         new_arr = np.empty([self.np_arr.shape[0] - (top+bottom), self.np_arr.shape[1] - (left+right), 3], dtype=np.uint8)
 
@@ -357,15 +362,15 @@ class SkImage:
         
         # Create culumulative normalized histogram for each rgb
         counts_r, bins_r = np.histogram(self.np_arr[:, :, 0], 256, [0, 256])
-        counts_r = np.cumsum(counts_r) # Culmulative sum of all elements
+        counts_r = np.cumsum(counts_r) # Cumulative sum of all elements
         counts_r = counts_r / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
 
         counts_g, bins_g = np.histogram(self.np_arr[:, :, 1], 256, [0, 256])
-        counts_g = np.cumsum(counts_g) # Culmulative sum of all elements
+        counts_g = np.cumsum(counts_g) # Cumulative sum of all elements
         counts_g = counts_g / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
 
         counts_b, bins_b = np.histogram(self.np_arr[:, :, 2], 256, [0, 256])
-        counts_b = np.cumsum(counts_b) # Culmulative sum of all elements
+        counts_b = np.cumsum(counts_b) # Cumulative sum of all elements
         counts_b = counts_b / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
 
         # Create pixel maps for each rgb, relating to the CN histograms
@@ -389,7 +394,7 @@ class SkImage:
         self.non_rotated = self.np_arr
 
 
-    def histogram(self, rgb, normalized, culmulative):
+    def histogram(self, rgb, normalized, cumulative):
 
         plt.clf() # Clear old plots if they exist
 
@@ -402,8 +407,8 @@ class SkImage:
 
                 counts, bins = np.histogram(self.np_arr[:, :, i], 256, [0, 256])
 
-                if culmulative:
-                    counts = np.cumsum(counts) # Culmulative sum of all elements (TODO: Is this cheating? could just make this function...)
+                if cumulative:
+                    counts = np.cumsum(counts) # Cumulative sum of all elements
                 
                 if normalized:
                     counts = counts / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN
@@ -411,8 +416,8 @@ class SkImage:
                 plt.stairs(counts, bins, color = col) # Add to plot
 
 
-            if culmulative:
-                title = "Culmulative " + title # Prepend to title
+            if cumulative:
+                title = "Cumulative " + title # Prepend to title
 
             if normalized:
                 plt.ylim([0, 1]) # Normalized maps to [0, 1]
@@ -428,9 +433,9 @@ class SkImage:
             counts, bins = np.histogram(self.np_arr.ravel(), 256, [0, 256])
             counts = counts / 3 # divide since it is graylevel not rgb
 
-            if culmulative:
-                counts = np.cumsum(counts) # Culmulative sum of all elements before (TODO: Is this cheating? could just make this function...)
-                title = "Culmulative " + title # Prepend to title
+            if cumulative:
+                counts = np.cumsum(counts) # Cumulative sum of all elements before (TODO: Is this cheating? could just make this function...)
+                title = "Cumulative " + title # Prepend to title
 
             if normalized:
                 counts = counts / (self.np_arr.shape[0] * self.np_arr.shape[1]) # divide all elements by MN

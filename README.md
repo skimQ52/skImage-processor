@@ -21,6 +21,8 @@ This program operates fully in raster (bitmap), no vector operations are done. A
 ---
 
 Upon starting the program, users are met with a landing page as seen below.
+
+![Main Menu](https://github.com/skimQ52/skImage-processor/blob/main/mainmenu.png)
   
 
 To proceed, users must click the Upload Image button in the top right of the application.   
@@ -43,7 +45,6 @@ At any point in operation, users may save (or save as) the image, reset the imag
 
 **Reflecting:**
 Clicking the Reflect button of the left button-bar will open the Reflecting window. Then, users can choose either to reflect Horizontally or Vertically.  
-For example, if the Vertical operation was selected, our cat.jpg flips upside down!
 
 
 **Scaling:**
@@ -52,12 +53,6 @@ Clicking the Scale button will open the Scaling window. Then, users can input th
 
 **Rotating:**
 Clicking the Rotate button will open the Rotate window. Then, users can choose the direction they wish to rotate the image, the number of degrees they wish to rotate, and finally, the interpolation method. There exists three interpolations for rotation, nearest-neighbour, bilinear, and shear.    
-
-
-*An image that has been rotated 65 degrees Clockwise with bilinear interpolation.*
-
-
-
 
 **Cropping:**
 Clicking the Crop button will open the Crop window. Then, users can input the number of pixels to crop from each side of the image (Left, Right, Top, Bottom).
@@ -71,19 +66,11 @@ Brightness, Contrast and Gamma of the image are all manipulatable using their de
 1.5 - Histograms and Histogram Equalization
 ---
 
-Clicking the Histogram button will open the histogram menu, as seen below.  
-
-
-Here, users can select between the three toggleable options of histograms: Color Image, Normalized, and Cumulative. Then, clicking Show Histogram will display the according histogram for the current image being processed.
+Clicking the Histogram button will open the histogram menu. Here, users can select between the three toggleable options of histograms: Color Image, Normalized, and Cumulative. Then, clicking Show Histogram will display the according histogram for the current image being processed.
   
-
-To illustrate, here is the Normalized, Cumulative histogram generated for the colour image ‘cat.jpg’. 
-
 
 Additionally, users can perform Histogram Equalization by clicking on its button in the histogram menu, which equalizes this generated histogram and consequently alters the contrast to be ‘statistically better’.  
   
-
-Here we have the same histogram as above as well as the output image after Histogram Equalization has been performed.
 
 1.6 - Convolution
 ---
@@ -92,15 +79,11 @@ Clicking on the Convolution button will open the Convolution menu as seen below.
    
 Users can either: enter the values for the size of a custom kernel and click the Custom button, or select one of the preset kernels given on the right. Additionally, users can choose between different border handling behaviour from the bottom dropdown menu: zero padding or truncation.  
 
-
-If a user were to click the Custom button with 3 x 3 entered into the size entry boxes, an empty kernel like this would appear ready to be filled in.   
-
+If a user were to click the Custom button with 3 x 3 entered into the size entry boxes, an empty kernel would appear ready to be filled in.   
 
 Otherwise, if the user selected one of the preset kernels on the right, Gaussian5x5 for example, they would be met with a similar pop-up with predefined values filled into the kernel. Of course, users can alter the presets’ values as they desire.
 
-
 Once the kernel is completed, and all its values are filled in, the user can click the Apply button to apply the convolution.
-
 
 1.7 - Order-Statistic Filtering and Adding Noise
 ---
